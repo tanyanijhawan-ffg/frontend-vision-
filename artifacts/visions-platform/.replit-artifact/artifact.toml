@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Visions Learning & Empowerment Platform"
+version = "1.0.0"
+id = "artifacts/visions-platform"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24889
+
+[services.development]
+run = "pnpm --filter @workspace/visions-platform run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/visions-platform", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/visions-platform/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24889"
+BASE_PATH = "/"
