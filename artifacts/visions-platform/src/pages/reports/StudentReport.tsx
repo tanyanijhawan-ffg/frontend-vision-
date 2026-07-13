@@ -1,85 +1,58 @@
-import React, { useState } from 'react';
-import { Box, Paper, FormControl, InputLabel, Select, MenuItem, Button, Grid, Typography } from '@mui/material';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import GridOnIcon from '@mui/icons-material/GridOn';
-
+import { Download, FileText } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
-import { students, regions, centres } from '../../data/mockData';
+import { students } from '../../data/mockData';
 
-const StudentReport: React.FC = () => {
-  const [region, setRegion] = useState('All');
-  const [centre, setCentre] = useState('All');
-
-  const filteredStudents = students.filter(s => {
-    const matchesRegion = region === 'All' || s.region === regions.find(r => r.id === region)?.name;
-    const matchesCentre = centre === 'All' || s.centre === centres.find(c => c.id === centre)?.name;
-    return matchesRegion && matchesCentre;
-  });
-
-  const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', width: 130 },
-    { field: 'name', headerName: 'Name', flex: 1 },
-    { field: 'gender', headerName: 'Gender', width: 80 },
-    { field: 'age', headerName: 'Age', width: 70 },
-    { field: 'class', headerName: 'Class', width: 80 },
-    { field: 'centre', headerName: 'Centre', flex: 1 },
-    { field: 'attendancePercent', headerName: 'Attd %', width: 90 },
-    { field: 'academicScore', headerName: 'Score %', width: 90 },
-  ];
-
+export default function StudentReport() {
   return (
-    <Box>
+    <div className="max-w-7xl mx-auto space-y-6">
       <PageHeader 
         title="Student Report" 
-        breadcrumbs={[{ label: 'Reports', to: '/reports' }, { label: 'Students' }]} 
+        subtitle="Comprehensive student data export."
+        action={
+          <div className="flex gap-2">
+            <button className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+              <FileText size={16} />
+              Export PDF
+            </button>
+            <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+              <Download size={16} />
+              Export Excel
+            </button>
+          </div>
+        }
       />
-
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={4}>
-            <FormControl size="small" fullWidth>
-              <InputLabel>Region Filter</InputLabel>
-              <Select value={region} label="Region Filter" onChange={(e) => setRegion(e.target.value)}>
-                <MenuItem value="All">All Regions</MenuItem>
-                {regions.map(r => <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>)}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <FormControl size="small" fullWidth>
-              <InputLabel>Centre Filter</InputLabel>
-              <Select value={centre} label="Centre Filter" onChange={(e) => setCentre(e.target.value)}>
-                <MenuItem value="All">All Centres</MenuItem>
-                {centres.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={4} sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-            <Button variant="outlined" startIcon={<PictureAsPdfIcon />}>PDF</Button>
-            <Button variant="outlined" startIcon={<GridOnIcon />} color="success">Excel</Button>
-          </Grid>
-        </Grid>
-      </Paper>
-
-      <Box sx={{ display: 'flex', gap: 3, mb: 2 }}>
-        <Typography variant="body2">Total Results: <strong>{filteredStudents.length}</strong></Typography>
-        <Typography variant="body2">Avg Attendance: <strong>86%</strong></Typography>
-        <Typography variant="body2">Avg Score: <strong>72%</strong></Typography>
-      </Box>
-
-      <Paper sx={{ width: '100%' }}>
-        <DataGrid
-          rows={filteredStudents}
-          columns={columns}
-          initialState={{ pagination: { paginationModel: { page: 0, pageSize: 25 } } }}
-          pageSizeOptions={[25, 50, 100]}
-          disableRowSelectionOnClick
-          autoHeight
-        />
-      </Paper>
-    </Box>
+      
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-slate-200 bg-slate-50/50">
+           <span className="text-sm font-medium text-slate-700">Preview (Top 10 rows)</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-slate-600 whitespace-nowrap">
+            <thead className="bg-slate-50 text-slate-700 font-medium border-b border-slate-200">
+              <tr>
+                <th className="px-6 py-3">ID</th>
+                <th className="px-6 py-3">Name</th>
+                <th className="px-6 py-3">Centre</th>
+                <th className="px-6 py-3">Region</th>
+                <th className="px-6 py-3">Attendance %</th>
+                <th className="px-6 py-3">Academic %</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {students.slice(0, 10).map((s) => (
+                <tr key={s.id} className="hover:bg-slate-50/80 transition-colors">
+                  <td className="px-6 py-4">{s.id}</td>
+                  <td className="px-6 py-4 font-medium text-slate-900">{s.name}</td>
+                  <td className="px-6 py-4">{s.centre}</td>
+                  <td className="px-6 py-4">{s.region}</td>
+                  <td className="px-6 py-4">{s.attendancePercent}%</td>
+                  <td className="px-6 py-4">{s.academicScore}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
-};
-
-export default StudentReport;
+}

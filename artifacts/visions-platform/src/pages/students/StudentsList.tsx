@@ -1,171 +1,165 @@
-import React, { useState } from 'react';
-import { Box, Paper, Avatar, LinearProgress, Typography, FormControl, InputLabel, Select, MenuItem, Chip, Tooltip } from '@mui/material';
-import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import AddIcon from '@mui/icons-material/Add';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import EditIcon from '@mui/icons-material/Edit';
-import IconButton from '@mui/material/IconButton';
-import { useNavigate } from 'react-router-dom';
-
+import { useState } from 'react';
+import { Search, Plus, Filter, ChevronRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/PageHeader';
-import DataTableToolbar from '../../components/DataTableToolbar';
 import StatusChip from '../../components/StatusChip';
 import { students, regions, centres } from '../../data/mockData';
 
-const StudentsList: React.FC = () => {
-  const navigate = useNavigate();
-  const [search, setSearch] = useState('');
+export default function StudentsList() {
+  const [data] = useState(students);
   const [filterRegion, setFilterRegion] = useState('All');
   const [filterCentre, setFilterCentre] = useState('All');
+  const navigate = useNavigate();
 
-  const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', width: 140 },
-    { 
-      field: 'name', 
-      headerName: 'Student', 
-      flex: 1, 
-      minWidth: 200,
-      renderCell: (params) => (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.light', color: 'primary.dark', fontSize: '0.875rem' }}>
-            {params.value.charAt(0)}
-          </Avatar>
-          <Box>
-            <Typography variant="body2" fontWeight={500}>{params.value}</Typography>
-            <Typography variant="caption" color="text.secondary">{params.row.gender} • {params.row.age} yrs • Class {params.row.class}</Typography>
-          </Box>
-        </Box>
-      )
-    },
-    { field: 'centre', headerName: 'Centre', flex: 1, minWidth: 150 },
-    { 
-      field: 'attendancePercent', 
-      headerName: 'Attendance', 
-      width: 130,
-      renderCell: (params) => {
-        const value = params.value;
-        const color = value < 75 ? 'error' : value < 85 ? 'warning' : 'success';
-        return (
-          <Box sx={{ width: '100%', pr: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-              <Typography variant="caption" fontWeight="bold">{value}%</Typography>
-            </Box>
-            <LinearProgress variant="determinate" value={value} color={color as any} sx={{ height: 6, borderRadius: 3 }} />
-          </Box>
-        );
-      }
-    },
-    { 
-      field: 'academicScore', 
-      headerName: 'Avg Score', 
-      width: 100,
-      align: 'center',
-      headerAlign: 'center',
-      renderCell: (params) => {
-        const value = params.value;
-        const color = value < 50 ? 'error.main' : value < 75 ? 'warning.main' : 'success.main';
-        return <Typography variant="body2" fontWeight="bold" sx={{ color }}>{value}%</Typography>;
-      }
-    },
-    { 
-      field: 'vulnerabilities', 
-      headerName: 'Vulnerabilities', 
-      width: 200,
-      renderCell: (params) => {
-        const vuls = params.value as string[];
-        if (!vuls || vuls.length === 0) return <Typography variant="caption" color="text.secondary">-</Typography>;
-        return (
-          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center', height: '100%' }}>
-            {vuls.slice(0, 1).map((v, i) => (
-              <Tooltip key={i} title={v}>
-                <Chip label={v} size="small" sx={{ maxWidth: 120, fontSize: '0.65rem', height: 20 }} />
-              </Tooltip>
-            ))}
-            {vuls.length > 1 && (
-              <Tooltip title={vuls.slice(1).join(', ')}>
-                <Chip label={`+${vuls.length - 1}`} size="small" variant="outlined" sx={{ fontSize: '0.65rem', height: 20 }} />
-              </Tooltip>
-            )}
-          </Box>
-        );
-      }
-    },
-    { 
-      field: 'status', 
-      headerName: 'Status', 
-      width: 100,
-      renderCell: (params) => <StatusChip status={params.value} />
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 100,
-      sortable: false,
-      renderCell: (params) => (
-        <Box>
-          <IconButton size="small" onClick={() => navigate(`/students/${params.row.id}`)} color="primary">
-            <VisibilityIcon fontSize="small" />
-          </IconButton>
-          <IconButton size="small" color="default">
-            <EditIcon fontSize="small" />
-          </IconButton>
-        </Box>
-      )
-    }
-  ];
-
-  const filteredData = students.filter(s => {
-    const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase()) || 
-                          s.id.toLowerCase().includes(search.toLowerCase());
-    const matchesRegion = filterRegion === 'All' || s.region === regions.find(r => r.id === filterRegion)?.name;
-    const matchesCentre = filterCentre === 'All' || s.centre === centres.find(c => c.id === filterCentre)?.name;
-    
-    return matchesSearch && matchesRegion && matchesCentre;
-  });
+  const filteredData = data.filter(s => 
+    (filterRegion === 'All' || s.region === filterRegion) &&
+    (filterCentre === 'All' || s.centre === filterCentre)
+  );
 
   return (
-    <Box>
+    <div className="max-w-7xl mx-auto">
       <PageHeader 
-        title="Student Management" 
-        subtitle="View and manage all registered beneficiaries"
-        action={{ label: "Register Student", icon: <AddIcon />, to: "/students/new" }}
+        title="Students" 
+        subtitle="Manage student profiles, academic records, and attendance."
+        action={
+          <Link 
+            to="/students/new"
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
+          >
+            <Plus size={16} />
+            Register Student
+          </Link>
+        }
       />
 
-      <Paper sx={{ width: '100%', mb: 2 }}>
-        <DataTableToolbar searchQuery={search} onSearchChange={setSearch} placeholder="Search ID, name...">
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Region</InputLabel>
-            <Select value={filterRegion} label="Region" onChange={(e) => setFilterRegion(e.target.value)}>
-              <MenuItem value="All">All Regions</MenuItem>
-              {regions.map(r => <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>)}
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Centre</InputLabel>
-            <Select value={filterCentre} label="Centre" onChange={(e) => setFilterCentre(e.target.value)}>
-              <MenuItem value="All">All Centres</MenuItem>
-              {centres.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
-            </Select>
-          </FormControl>
-        </DataTableToolbar>
-        
-        <DataGrid
-          rows={filteredData}
-          columns={columns}
-          initialState={{ pagination: { paginationModel: { page: 0, pageSize: 10 } } }}
-          pageSizeOptions={[10, 25, 50]}
-          disableRowSelectionOnClick
-          onRowClick={(params) => navigate(`/students/${params.row.id}`)}
-          autoHeight
-          rowHeight={64}
-          sx={{ 
-            border: 'none',
-            '& .MuiDataGrid-row': { cursor: 'pointer' }
-          }}
-        />
-      </Paper>
-    </Box>
-  );
-};
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+        {/* Toolbar */}
+        <div className="p-4 border-b border-slate-200 flex flex-wrap items-center gap-4 bg-slate-50/50">
+          <div className="relative flex-1 min-w-[240px] max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search by name, ID..." 
+              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
+            />
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Filter size={16} className="text-slate-400" />
+              <select 
+                value={filterRegion}
+                onChange={(e) => { setFilterRegion(e.target.value); setFilterCentre('All'); }}
+                className="py-2 pl-3 pr-8 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none shadow-sm cursor-pointer"
+              >
+                <option value="All">All Regions</option>
+                {regions.map(r => <option key={r.id} value={r.name}>{r.name}</option>)}
+              </select>
+            </div>
+            
+            <select 
+              value={filterCentre}
+              onChange={(e) => setFilterCentre(e.target.value)}
+              className="py-2 pl-3 pr-8 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none shadow-sm cursor-pointer"
+              disabled={filterRegion === 'All'}
+            >
+              <option value="All">All Centres</option>
+              {centres.filter(c => filterRegion === 'All' || c.region === filterRegion).map(c => 
+                <option key={c.id} value={c.name}>{c.name}</option>
+              )}
+            </select>
+          </div>
+        </div>
 
-export default StudentsList;
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-slate-600 whitespace-nowrap">
+            <thead className="bg-slate-50 text-slate-700 font-medium border-b border-slate-200">
+              <tr>
+                <th className="px-6 py-3">Student</th>
+                <th className="px-6 py-3">Demographics</th>
+                <th className="px-6 py-3">Centre & Class</th>
+                <th className="px-6 py-3">Attendance</th>
+                <th className="px-6 py-3">Avg Score</th>
+                <th className="px-6 py-3">Status</th>
+                <th className="px-6 py-3"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredData.map((student) => {
+                const isRisk = student.status === 'Warning' || student.attendancePercent < 75;
+                return (
+                  <tr 
+                    key={student.id} 
+                    onClick={() => navigate(`/students/${student.id}`)}
+                    className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-600 text-sm border border-slate-200 shrink-0">
+                          {student.name.charAt(0)}
+                        </div>
+                        <div>
+                          <div className="font-medium text-slate-900 group-hover:text-indigo-600 transition-colors">
+                            {student.name}
+                          </div>
+                          <div className="text-xs text-slate-500 mt-0.5">{student.id}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-slate-900">{student.gender}, {student.age} yrs</div>
+                      {student.vulnerabilities.length > 0 && (
+                        <div className="text-[10px] text-amber-600 font-medium mt-1 max-w-[150px] truncate" title={student.vulnerabilities.join(', ')}>
+                          {student.vulnerabilities[0]} {student.vulnerabilities.length > 1 && `+${student.vulnerabilities.length - 1}`}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-slate-900">{student.centre}</div>
+                      <div className="text-xs text-slate-500 mt-0.5">Class {student.class}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full rounded-full ${student.attendancePercent >= 90 ? 'bg-emerald-500' : student.attendancePercent >= 75 ? 'bg-amber-500' : 'bg-red-500'}`} 
+                            style={{ width: `${student.attendancePercent}%` }}
+                          ></div>
+                        </div>
+                        <span className={`text-xs font-medium ${student.attendancePercent < 75 ? 'text-red-600' : ''}`}>
+                          {student.attendancePercent}%
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                        student.academicScore >= 80 ? 'bg-emerald-50 text-emerald-700' :
+                        student.academicScore >= 60 ? 'bg-indigo-50 text-indigo-700' :
+                        'bg-red-50 text-red-700'
+                      }`}>
+                        {student.academicScore}%
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <StatusChip status={isRisk ? 'At Risk' : 'Active'} />
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <ChevronRight size={18} className="text-slate-400 group-hover:text-indigo-600 transition-colors inline-block" />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        
+        {filteredData.length === 0 && (
+          <div className="p-12 text-center">
+            <div className="text-slate-400 mb-2">No students found matching filters.</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

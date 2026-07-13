@@ -1,43 +1,34 @@
-import React from 'react';
-import { Chip } from '@mui/material';
+import clsx from 'clsx';
 
 interface StatusChipProps {
   status: string;
-  size?: 'small' | 'medium';
 }
 
-const getStatusColor = (status: string) => {
-  const s = status.toLowerCase();
-  if (s === 'active' || s === 'present' || s === 'completed' || s === 'good') {
-    return { color: '#1B5E20', bgcolor: '#E8F5E9', border: '#C8E6C9' };
-  }
-  if (s === 'inactive' || s === 'absent' || s === 'dropout' || s === 'risk') {
-    return { color: '#B71C1C', bgcolor: '#FFEBEE', border: '#FFCDD2' };
-  }
-  if (s === 'warning' || s === 'late' || s === 'pending') {
-    return { color: '#E65100', bgcolor: '#FFF3E0', border: '#FFE0B2' };
-  }
-  return { color: '#000000', bgcolor: '#F5F5F5', border: '#E0E0E0' };
-};
+export default function StatusChip({ status }: StatusChipProps) {
+  const getStyles = () => {
+    switch (status.toLowerCase()) {
+      case 'active':
+      case 'present':
+      case 'completed':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'warning':
+      case 'late':
+      case 'pending':
+        return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'inactive':
+      case 'absent':
+      case 'at risk':
+      case 'high risk':
+      case 'failed':
+        return 'bg-red-50 text-red-700 border-red-200';
+      default:
+        return 'bg-slate-100 text-slate-700 border-slate-200';
+    }
+  };
 
-const StatusChip: React.FC<StatusChipProps> = ({ status, size = 'small' }) => {
-  const colors = getStatusColor(status);
-  
   return (
-    <Chip
-      label={status}
-      size={size}
-      sx={{
-        color: colors.color,
-        bgcolor: colors.bgcolor,
-        borderColor: colors.border,
-        fontWeight: 600,
-        fontSize: size === 'small' ? '0.7rem' : '0.8125rem',
-        height: size === 'small' ? 24 : 32,
-      }}
-      variant="outlined"
-    />
+    <span className={clsx("inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border", getStyles())}>
+      {status}
+    </span>
   );
-};
-
-export default StatusChip;
+}

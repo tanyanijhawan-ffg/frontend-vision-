@@ -1,142 +1,136 @@
-import React, { useState } from 'react';
-import { 
-  Box, Paper, Typography, FormControl, InputLabel, Select, MenuItem, Button, 
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  RadioGroup, FormControlLabel, Radio, TextField, Snackbar, Alert, Collapse, IconButton
-} from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs from 'dayjs';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { useNavigate } from 'react-router-dom';
-
+import { useState } from 'react';
+import { Search, Save } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
-import { centres, students } from '../../data/mockData';
+import { students, centres } from '../../data/mockData';
 
-const Row = ({ student }: { student: any }) => {
-  const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState('Present');
-
-  return (
-    <React.Fragment>
-      <TableRow sx={{ '& > *': { borderBottom: 'unset' }, bgcolor: status === 'Absent' ? 'error.50' : 'inherit' }}>
-        <TableCell>
-          <IconButton size="small" onClick={() => setOpen(!open)}>
-            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-          </IconButton>
-        </TableCell>
-        <TableCell component="th" scope="row">
-          <Typography variant="body2" fontWeight={500}>{student.name}</Typography>
-          <Typography variant="caption" color="text.secondary">{student.id}</Typography>
-        </TableCell>
-        <TableCell>
-          <RadioGroup row value={status} onChange={(e) => setStatus(e.target.value)}>
-            <FormControlLabel value="Present" control={<Radio size="small" color="success" />} label={<Typography variant="body2">Present</Typography>} />
-            <FormControlLabel value="Absent" control={<Radio size="small" color="error" />} label={<Typography variant="body2">Absent</Typography>} />
-            <FormControlLabel value="Late" control={<Radio size="small" color="warning" />} label={<Typography variant="body2">Late</Typography>} />
-          </RadioGroup>
-        </TableCell>
-      </TableRow>
-      <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={3}>
-          <Collapse in={open} timeout="auto" unmountOnExit>
-            <Box sx={{ margin: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-              <Typography variant="subtitle2" gutterBottom>Session Observations (Optional)</Typography>
-              <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap', mb: 2 }}>
-                <FormControl component="fieldset">
-                  <Typography variant="caption" color="text.secondary">Attention Level</Typography>
-                  <RadioGroup row>
-                    <FormControlLabel value="focused" control={<Radio size="small"/>} label={<Typography variant="body2">Focused</Typography>} />
-                    <FormControlLabel value="distracted" control={<Radio size="small"/>} label={<Typography variant="body2">Distracted</Typography>} />
-                  </RadioGroup>
-                </FormControl>
-                <FormControl component="fieldset">
-                  <Typography variant="caption" color="text.secondary">Behaviour</Typography>
-                  <RadioGroup row>
-                    <FormControlLabel value="cooperative" control={<Radio size="small"/>} label={<Typography variant="body2">Cooperative</Typography>} />
-                    <FormControlLabel value="disruptive" control={<Radio size="small"/>} label={<Typography variant="body2">Disruptive</Typography>} />
-                  </RadioGroup>
-                </FormControl>
-              </Box>
-              <TextField fullWidth size="small" label="Remarks / Reason for Absence" />
-            </Box>
-          </Collapse>
-        </TableCell>
-      </TableRow>
-    </React.Fragment>
+export default function AttendanceEntry() {
+  const [selectedCentre, setSelectedCentre] = useState(centres[0].name);
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  
+  // Filter students by selected centre
+  const filteredStudents = students.filter(s => s.centre === selectedCentre);
+  
+  // Local state for attendance marking
+  const [attendance, setAttendance] = useState<Record<string, { status: string, remark: string }>>(
+    Object.fromEntries(filteredStudents.map(s => [s.id, { status: 'Present', remark: '' }]))
   );
-};
 
-const AttendanceEntry: React.FC = () => {
-  const navigate = useNavigate();
-  const [centre, setCentre] = useState('');
-  const [loaded, setLoaded] = useState(false);
-  const [toastOpen, setToastOpen] = useState(false);
+  const handleStatusChange = (id: string, status: string) => {
+    setAttendance(prev => ({ ...prev, [id]: { ...prev[id], status } }));
+  };
 
-  const centreStudents = students.filter(s => s.centre === centres.find(c => c.id === centre)?.name);
-
-  const handleSave = () => {
-    setToastOpen(true);
-    setTimeout(() => navigate('/attendance'), 1500);
+  const handleRemarkChange = (id: string, remark: string) => {
+    setAttendance(prev => ({ ...prev, [id]: { ...prev[id], remark } }));
   };
 
   return (
-    <Box sx={{ maxWidth: 900, mx: 'auto' }}>
-      <PageHeader title="Mark Daily Attendance" breadcrumbs={[{ label: 'Attendance', to: '/attendance' }, { label: 'Entry' }]} />
+    <div className="max-w-5xl mx-auto space-y-6">
+      <PageHeader 
+        title="Mark Attendance" 
+        subtitle="Record daily student attendance for a centre."
+        action={
+          <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+            <Save size={16} />
+            Save Attendance
+          </button>
+        }
+      />
 
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker label="Session Date" defaultValue={dayjs()} slotProps={{ textField: { size: 'small' } }} />
-          </LocalizationProvider>
-          <FormControl size="small" sx={{ minWidth: 250 }}>
-            <InputLabel>Select Centre</InputLabel>
-            <Select value={centre} label="Select Centre" onChange={(e) => setCentre(e.target.value)}>
-              {centres.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
-            </Select>
-          </FormControl>
-          <Button variant="contained" disabled={!centre} onClick={() => setLoaded(true)}>
-            Load Roster
-          </Button>
-        </Box>
-      </Paper>
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-4 sm:p-6 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Select Centre</label>
+            <select 
+              value={selectedCentre}
+              onChange={(e) => setSelectedCentre(e.target.value)}
+              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none shadow-sm cursor-pointer"
+            >
+              {centres.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Date</label>
+            <input 
+              type="date" 
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none shadow-sm"
+            />
+          </div>
+        </div>
+      </div>
 
-      {loaded && (
-        <Paper sx={{ overflow: 'hidden' }}>
-          <TableContainer sx={{ maxHeight: '60vh' }}>
-            <Table stickyHeader>
-              <TableHead>
-                <TableRow>
-                  <TableCell width="50" />
-                  <TableCell>Student</TableCell>
-                  <TableCell>Attendance Status</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {centreStudents.length > 0 ? centreStudents.map((student) => (
-                  <Row key={student.id} student={student} />
-                )) : (
-                  <TableRow><TableCell colSpan={3} align="center">No students found for this centre.</TableCell></TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          
-          <Box sx={{ p: 2, bgcolor: 'grey.100', borderTop: 1, borderColor: 'divider', display: 'flex', justifyContent: 'flex-end' }}>
-            <Button variant="contained" size="large" onClick={handleSave} disabled={centreStudents.length === 0}>
-              Save All Attendance
-            </Button>
-          </Box>
-        </Paper>
-      )}
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+        <div className="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4 bg-slate-50/50">
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search students..." 
+              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
+            />
+          </div>
+          <div className="text-sm text-slate-500">
+            Showing <span className="font-bold text-slate-900">{filteredStudents.length}</span> students
+          </div>
+        </div>
 
-      <Snackbar open={toastOpen} autoHideDuration={3000}>
-        <Alert severity="success" sx={{ width: '100%' }}>Attendance saved successfully!</Alert>
-      </Snackbar>
-    </Box>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-slate-600 min-w-[800px]">
+            <thead className="bg-slate-50 text-slate-700 font-medium border-b border-slate-200">
+              <tr>
+                <th className="px-6 py-3 w-1/3">Student</th>
+                <th className="px-6 py-3 w-1/3">Status</th>
+                <th className="px-6 py-3 w-1/3">Remarks</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredStudents.map((student) => {
+                const att = attendance[student.id] || { status: 'Present', remark: '' };
+                return (
+                  <tr key={student.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-slate-900">{student.name}</div>
+                      <div className="text-xs text-slate-500 mt-0.5">{student.id}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        {['Present', 'Absent', 'Late'].map(status => (
+                          <label key={status} className="flex items-center gap-1.5 cursor-pointer">
+                            <input 
+                              type="radio" 
+                              name={`status-${student.id}`} 
+                              value={status}
+                              checked={att.status === status}
+                              onChange={() => handleStatusChange(student.id, status)}
+                              className={`w-4 h-4 text-indigo-600 border-slate-300 focus:ring-indigo-500 ${
+                                status === 'Absent' ? 'text-red-600 focus:ring-red-500' :
+                                status === 'Late' ? 'text-amber-500 focus:ring-amber-500' : ''
+                              }`}
+                            />
+                            <span className="text-sm">{status}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <input 
+                        type="text" 
+                        placeholder={att.status === 'Absent' ? "Reason for absence..." : "Optional remarks"}
+                        value={att.remark}
+                        onChange={(e) => handleRemarkChange(student.id, e.target.value)}
+                        className={`w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors ${
+                          att.status === 'Absent' && !att.remark ? 'border-red-300 bg-red-50/50' : ''
+                        }`}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
-};
-
-export default AttendanceEntry;
+}

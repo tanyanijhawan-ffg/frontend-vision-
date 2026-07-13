@@ -1,186 +1,194 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  Box, Card, Typography, Avatar, Grid, Tabs, Tab, Paper, Divider,
-  Chip, List, ListItem, ListItemText, ListItemIcon, Button
-} from '@mui/material';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
-import EventIcon from '@mui/icons-material/Event';
-import SchoolIcon from '@mui/icons-material/School';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-
-import PageHeader from '../../components/PageHeader';
+import { ArrowLeft, User, Calendar, BookOpen, FileText } from 'lucide-react';
 import StatusChip from '../../components/StatusChip';
 import { students } from '../../data/mockData';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 
-const subjectScores = [
-  { subject: 'Tamil', q1: 65, q2: 70, q3: 75 },
-  { subject: 'English', q1: 50, q2: 55, q3: 68 },
-  { subject: 'Math', q1: 45, q2: 60, q3: 65 },
-  { subject: 'Science', q1: 70, q2: 72, q3: 78 },
-  { subject: 'Social', q1: 75, q2: 80, q3: 82 },
+const attendanceData = [
+  { month: 'Jan', percent: 95 },
+  { month: 'Feb', percent: 92 },
+  { month: 'Mar', percent: 88 },
+  { month: 'Apr', percent: 96 },
+  { month: 'May', percent: 90 },
 ];
 
-const StudentProfile: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const [tabValue, setTabValue] = useState(0);
+const academicData = [
+  { subject: 'Tamil', score: 85 },
+  { subject: 'English', score: 72 },
+  { subject: 'Math', score: 90 },
+  { subject: 'Science', score: 88 },
+  { subject: 'Social', score: 82 },
+];
 
-  // In a real app, fetch student by id. Using first mock student as fallback.
+export default function StudentProfile() {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const student = students.find(s => s.id === id) || students[0];
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const tabs = [
+    { id: 'overview', name: 'Overview', icon: User },
+    { id: 'attendance', name: 'Attendance', icon: Calendar },
+    { id: 'academics', name: 'Academics', icon: BookOpen },
+    { id: 'notes', name: 'Notes', icon: FileText },
+  ];
 
   return (
-    <Box>
-      <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/students')} sx={{ mb: 2 }}>
-        Back to Students
-      </Button>
+    <div className="max-w-5xl mx-auto pb-12">
+      <div className="mb-6 flex items-center gap-4">
+        <button 
+          onClick={() => navigate('/students')}
+          className="p-2 -ml-2 rounded-full hover:bg-slate-200 transition-colors text-slate-500"
+        >
+          <ArrowLeft size={20} />
+        </button>
+        <span className="text-slate-500">Back to Students</span>
+      </div>
 
-      {/* Hero Card */}
-      <Card sx={{ p: 4, mb: 3, display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center', background: 'linear-gradient(to right, #ffffff, #f8f9fa)' }}>
-        <Avatar sx={{ width: 100, height: 100, bgcolor: 'primary.main', fontSize: '2rem' }}>
+      {/* Header Card */}
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-6 mb-6">
+        <div className="h-24 w-24 rounded-full bg-indigo-50 border-2 border-indigo-100 flex items-center justify-center text-3xl font-bold text-indigo-600 shrink-0">
           {student.name.charAt(0)}
-        </Avatar>
-        <Box sx={{ flexGrow: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-            <Typography variant="h4" fontWeight="bold">{student.name}</Typography>
-            <StatusChip status={student.status} />
-          </Box>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-            ID: {student.id} • Class {student.class} • {student.centre}
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-            <Box>
-              <Typography variant="caption" color="text.secondary" display="block">Age / Gender</Typography>
-              <Typography variant="body2" fontWeight="bold">{student.age} yrs / {student.gender}</Typography>
-            </Box>
-            <Box>
-              <Typography variant="caption" color="text.secondary" display="block">Attendance</Typography>
-              <Typography variant="body2" fontWeight="bold" color={student.attendancePercent < 75 ? 'error.main' : 'success.main'}>
-                {student.attendancePercent}%
-              </Typography>
-            </Box>
-            <Box>
-              <Typography variant="caption" color="text.secondary" display="block">Avg Score</Typography>
-              <Typography variant="body2" fontWeight="bold" color="primary.main">{student.academicScore}%</Typography>
-            </Box>
-          </Box>
-        </Box>
-        <Button variant="outlined" startIcon={<SchoolIcon />} onClick={() => navigate(`/academics/${student.id}`)}>
-          Full Academic Profile
-        </Button>
-      </Card>
-
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)}>
-          <Tab label="Overview" />
-          <Tab label="Academic Progress" />
-          <Tab label="Attendance Details" />
-        </Tabs>
-      </Box>
-
-      {/* Tab 0: Overview */}
-      {tabValue === 0 && (
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3, height: '100%' }}>
-              <Typography variant="h6" sx={{ mb: 2, fontSize: '1.1rem' }}>Personal & Family</Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={4}><Typography variant="body2" color="text.secondary">Date of Birth</Typography></Grid>
-                <Grid item xs={8}><Typography variant="body2" fontWeight={500}>14 May 2012</Typography></Grid>
-                
-                <Grid item xs={4}><Typography variant="body2" color="text.secondary">School</Typography></Grid>
-                <Grid item xs={8}><Typography variant="body2" fontWeight={500}>Govt Higher Secondary, Madurai</Typography></Grid>
-                
-                <Grid item xs={12}><Divider sx={{ my: 1 }} /></Grid>
-
-                <Grid item xs={4}><Typography variant="body2" color="text.secondary">Father's Name</Typography></Grid>
-                <Grid item xs={8}><Typography variant="body2" fontWeight={500}>Ramesh K</Typography></Grid>
-                
-                <Grid item xs={4}><Typography variant="body2" color="text.secondary">Occupation</Typography></Grid>
-                <Grid item xs={8}><Typography variant="body2" fontWeight={500}>Daily Wage Labourer</Typography></Grid>
-                
-                <Grid item xs={4}><Typography variant="body2" color="text.secondary">Contact</Typography></Grid>
-                <Grid item xs={8}><Typography variant="body2" fontWeight={500}>+91 98765 43210</Typography></Grid>
-              </Grid>
-            </Paper>
-          </Grid>
+        </div>
+        
+        <div className="flex-1 text-center md:text-left">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">{student.name}</h1>
+              <p className="text-sm text-slate-500 mt-1">{student.id} &bull; {student.centre}</p>
+            </div>
+            <div>
+              <StatusChip status={student.status} />
+            </div>
+          </div>
           
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3, height: '100%' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <WarningAmberIcon color="warning" />
-                <Typography variant="h6" sx={{ fontSize: '1.1rem' }}>Vulnerability Profile</Typography>
-              </Box>
-              
-              <Box sx={{ mb: 3 }}>
-                {student.vulnerabilities.length > 0 ? (
-                  student.vulnerabilities.map((v, i) => (
-                    <Chip key={i} label={v} color="warning" sx={{ mr: 1, mb: 1 }} />
-                  ))
-                ) : (
-                  <Typography variant="body2" color="text.secondary">No identified vulnerabilities.</Typography>
-                )}
-              </Box>
-
-              <Typography variant="subtitle2" gutterBottom>Socio-Economic Summary</Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={6}><Typography variant="body2" color="text.secondary">Monthly Income</Typography></Grid>
-                <Grid item xs={6}><Typography variant="body2" fontWeight={500}>&lt; ₹5,000</Typography></Grid>
-                
-                <Grid item xs={6}><Typography variant="body2" color="text.secondary">House Type</Typography></Grid>
-                <Grid item xs={6}><Typography variant="body2" fontWeight={500}>Hut / Temporary</Typography></Grid>
-              </Grid>
-            </Paper>
-          </Grid>
-        </Grid>
-      )}
-
-      {/* Tab 1: Academic */}
-      {tabValue === 1 && (
-        <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ mb: 3, fontSize: '1.1rem' }}>Subject Performance Trend</Typography>
-          <Box sx={{ height: 350, width: '100%', mb: 4 }}>
-            <ResponsiveContainer>
-              <BarChart data={subjectScores} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="subject" axisLine={false} tickLine={false} />
-                <YAxis domain={[0, 100]} axisLine={false} tickLine={false} />
-                <RechartsTooltip cursor={{ fill: 'transparent' }} />
-                <Bar dataKey="q1" name="Quarter 1" fill="#90CAF9" radius={[4,4,0,0]} />
-                <Bar dataKey="q2" name="Quarter 2" fill="#42A5F5" radius={[4,4,0,0]} />
-                <Bar dataKey="q3" name="Quarter 3" fill="#1565C0" radius={[4,4,0,0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </Box>
-        </Paper>
-      )}
-
-      {/* Tab 2: Attendance */}
-      {tabValue === 2 && (
-        <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ mb: 3, fontSize: '1.1rem' }}>Recent Attendance (Last 10 Sessions)</Typography>
-          <List>
-            {[...Array(5)].map((_, i) => (
-              <React.Fragment key={i}>
-                <ListItem>
-                  <ListItemIcon>
-                    <EventIcon color={i === 2 ? "error" : "success"} />
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary={`1${5-i} May 2024`} 
-                    secondary={i === 2 ? "Absent - Fever reported" : "Present - Active participation"} 
-                  />
-                  <Chip label={i === 2 ? "Absent" : "Present"} size="small" color={i === 2 ? "error" : "success"} />
-                </ListItem>
-                <Divider component="li" />
-              </React.Fragment>
+          <div className="mt-6 flex flex-wrap justify-center md:justify-start gap-3">
+            {student.vulnerabilities.map(v => (
+              <span key={v} className="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-md text-xs font-medium">
+                {v}
+              </span>
             ))}
-          </List>
-        </Paper>
-      )}
-    </Box>
-  );
-};
+          </div>
+        </div>
+      </div>
 
-export default StudentProfile;
+      {/* Tabs */}
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+        <div className="flex border-b border-slate-200 overflow-x-auto custom-scrollbar">
+          {tabs.map(tab => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${
+                  isActive 
+                    ? 'border-indigo-600 text-indigo-600' 
+                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Icon size={16} />
+                {tab.name}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="p-6 md:p-8">
+          {activeTab === 'overview' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="text-sm font-bold tracking-wider text-slate-400 uppercase mb-4">Demographics</h3>
+                <dl className="space-y-3 text-sm">
+                  <div className="grid grid-cols-3"><dt className="text-slate-500">Gender</dt><dd className="col-span-2 font-medium text-slate-900">{student.gender}</dd></div>
+                  <div className="grid grid-cols-3"><dt className="text-slate-500">Age</dt><dd className="col-span-2 font-medium text-slate-900">{student.age} years</dd></div>
+                  <div className="grid grid-cols-3"><dt className="text-slate-500">Class</dt><dd className="col-span-2 font-medium text-slate-900">{student.class}</dd></div>
+                  <div className="grid grid-cols-3"><dt className="text-slate-500">Registered</dt><dd className="col-span-2 font-medium text-slate-900">{student.date}</dd></div>
+                </dl>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold tracking-wider text-slate-400 uppercase mb-4">Location</h3>
+                <dl className="space-y-3 text-sm">
+                  <div className="grid grid-cols-3"><dt className="text-slate-500">Region</dt><dd className="col-span-2 font-medium text-slate-900">{student.region}</dd></div>
+                  <div className="grid grid-cols-3"><dt className="text-slate-500">District</dt><dd className="col-span-2 font-medium text-slate-900">{student.district}</dd></div>
+                  <div className="grid grid-cols-3"><dt className="text-slate-500">Centre</dt><dd className="col-span-2 font-medium text-slate-900">{student.centre}</dd></div>
+                </dl>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'attendance' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Attendance History</h3>
+                  <p className="text-sm text-slate-500">Current average: <span className="font-bold text-indigo-600">{student.attendancePercent}%</span></p>
+                </div>
+              </div>
+              <div className="h-72 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={attendanceData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorPercent" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#4F46E5" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#64748B'}} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748B'}} dx={-10} />
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      itemStyle={{ color: '#4F46E5', fontWeight: 'bold' }}
+                    />
+                    <Area type="monotone" dataKey="percent" stroke="#4F46E5" strokeWidth={3} fillOpacity={1} fill="url(#colorPercent)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'academics' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Latest Assessment</h3>
+                  <p className="text-sm text-slate-500">Overall Score: <span className="font-bold text-indigo-600">{student.academicScore}%</span></p>
+                </div>
+              </div>
+              <div className="h-72 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={academicData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                    <XAxis dataKey="subject" axisLine={false} tickLine={false} tick={{fill: '#64748B'}} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748B'}} dx={-10} domain={[0, 100]} />
+                    <Tooltip 
+                      cursor={{fill: '#F1F5F9'}}
+                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    />
+                    <Bar dataKey="score" fill="#4F46E5" radius={[4, 4, 0, 0]} maxBarSize={50} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'notes' && (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+                <FileText size={24} />
+              </div>
+              <h3 className="text-slate-900 font-medium mb-1">No notes yet</h3>
+              <p className="text-slate-500 text-sm mb-4">Add qualitative observations about the student.</p>
+              <button className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg text-sm font-medium shadow-sm hover:bg-slate-50 transition-colors">
+                Add Note
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

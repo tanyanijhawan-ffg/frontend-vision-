@@ -1,191 +1,103 @@
-import React, { useState } from 'react';
-import { 
-  Box, Paper, Dialog, DialogTitle, DialogContent, DialogActions, 
-  Button, TextField, Select, MenuItem, FormControl, InputLabel, Switch, FormControlLabel 
-} from '@mui/material';
-import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import IconButton from '@mui/material/IconButton';
-
+import { useState } from 'react';
+import { Search, Plus, MoreVertical, Edit2, Trash2 } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
-import DataTableToolbar from '../../components/DataTableToolbar';
 import StatusChip from '../../components/StatusChip';
 import ConfirmDialog from '../../components/ConfirmDialog';
-import { regions as initialRegions } from '../../data/mockData';
+import { regions } from '../../data/mockData';
 
-const RegionsList: React.FC = () => {
-  const [regions, setRegions] = useState(initialRegions);
-  const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(false);
-  
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-
-  // Form State
-  const [formData, setFormData] = useState({
-    name: '',
-    state: '',
-    status: 'Active'
-  });
-
-  const handleOpenDialog = (region?: any) => {
-    if (region) {
-      setEditingId(region.id);
-      setFormData({
-        name: region.name,
-        state: region.state,
-        status: region.status
-      });
-    } else {
-      setEditingId(null);
-      setFormData({ name: '', state: '', status: 'Active' });
-    }
-    setDialogOpen(true);
-  };
-
-  const handleCloseDialog = () => setDialogOpen(false);
-
-  const handleSave = () => {
-    if (editingId) {
-      setRegions(regions.map(r => r.id === editingId ? { ...r, ...formData } : r));
-    } else {
-      const newRegion = {
-        id: `REG-00${regions.length + 1}`,
-        ...formData,
-        districts: 0,
-        centres: 0,
-        students: 0
-      };
-      setRegions([...regions, newRegion]);
-    }
-    handleCloseDialog();
-  };
+export default function RegionsList() {
+  const [data, setData] = useState(regions);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
 
   const handleDelete = () => {
-    if (deleteId) {
-      setRegions(regions.filter(r => r.id !== deleteId));
-      setDeleteId(null);
+    if (selectedRegion) {
+      setData(data.filter(r => r.id !== selectedRegion));
     }
   };
 
-  const columns: GridColDef[] = [
-    { field: 'name', headerName: 'Region Name', flex: 1, minWidth: 150 },
-    { field: 'state', headerName: 'State', flex: 1, minWidth: 130 },
-    { field: 'districts', headerName: 'Total Districts', width: 130, type: 'number', align: 'center', headerAlign: 'center' },
-    { field: 'centres', headerName: 'Total Centres', width: 130, type: 'number', align: 'center', headerAlign: 'center' },
-    { field: 'students', headerName: 'Total Students', width: 130, type: 'number', align: 'center', headerAlign: 'center' },
-    { 
-      field: 'status', 
-      headerName: 'Status', 
-      width: 120,
-      renderCell: (params: GridRenderCellParams) => <StatusChip status={params.value} />
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 120,
-      sortable: false,
-      renderCell: (params: GridRenderCellParams) => (
-        <Box>
-          <IconButton size="small" onClick={() => handleOpenDialog(params.row)} color="primary">
-            <EditIcon fontSize="small" />
-          </IconButton>
-          <IconButton size="small" onClick={() => setDeleteId(params.row.id)} color="error">
-            <DeleteIcon fontSize="small" />
-          </IconButton>
-        </Box>
-      )
-    }
-  ];
-
-  const filteredData = regions.filter(r => 
-    r.name.toLowerCase().includes(search.toLowerCase()) || 
-    r.state.toLowerCase().includes(search.toLowerCase())
-  );
-
   return (
-    <Box>
+    <div className="max-w-7xl mx-auto">
       <PageHeader 
-        title="Region Management" 
-        subtitle="Manage geographical operating regions"
-        action={{ label: "Add Region", icon: <AddIcon />, onClick: () => handleOpenDialog() }}
+        title="Regions" 
+        subtitle="Manage geographic regions and their assigned states."
+        action={
+          <button 
+            onClick={() => setIsFormOpen(true)}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            <Plus size={16} />
+            Add Region
+          </button>
+        }
       />
 
-      <Paper sx={{ width: '100%', mb: 2 }}>
-        <DataTableToolbar searchQuery={search} onSearchChange={setSearch} placeholder="Search regions..." />
-        <DataGrid
-          rows={filteredData}
-          columns={columns}
-          initialState={{
-            pagination: { paginationModel: { page: 0, pageSize: 10 } },
-          }}
-          pageSizeOptions={[10, 25, 50]}
-          disableRowSelectionOnClick
-          loading={loading}
-          autoHeight
-          sx={{ border: 'none', '& .MuiDataGrid-cell:focus': { outline: 'none' } }}
-        />
-      </Paper>
-
-      {/* Add/Edit Dialog */}
-      <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>{editingId ? 'Edit Region' : 'Add New Region'}</DialogTitle>
-        <DialogContent dividers>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, py: 1 }}>
-            <TextField
-              label="Region Name"
-              fullWidth
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+        {/* Toolbar */}
+        <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search regions..." 
+              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
             />
-            <FormControl fullWidth required>
-              <InputLabel>State</InputLabel>
-              <Select
-                value={formData.state}
-                label="State"
-                onChange={(e) => setFormData({...formData, state: e.target.value})}
-              >
-                <MenuItem value="Tamil Nadu">Tamil Nadu</MenuItem>
-                <MenuItem value="Karnataka">Karnataka</MenuItem>
-                <MenuItem value="Andhra Pradesh">Andhra Pradesh</MenuItem>
-                <MenuItem value="Kerala">Kerala</MenuItem>
-                <MenuItem value="Telangana">Telangana</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControlLabel
-              control={
-                <Switch 
-                  checked={formData.status === 'Active'} 
-                  onChange={(e) => setFormData({...formData, status: e.target.checked ? 'Active' : 'Inactive'})}
-                  color="primary"
-                />
-              }
-              label="Active Status"
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button onClick={handleSave} variant="contained" disabled={!formData.name || !formData.state}>
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
+          </div>
+        </div>
 
-      <ConfirmDialog
-        open={Boolean(deleteId)}
-        title="Delete Region"
-        content="Are you sure you want to delete this region? This action cannot be undone."
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-slate-600">
+            <thead className="bg-slate-50 text-slate-700 font-medium border-b border-slate-200">
+              <tr>
+                <th className="px-6 py-3">Region Name</th>
+                <th className="px-6 py-3">State</th>
+                <th className="px-6 py-3">Districts</th>
+                <th className="px-6 py-3">Centres</th>
+                <th className="px-6 py-3">Students</th>
+                <th className="px-6 py-3">Status</th>
+                <th className="px-6 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {data.map((region) => (
+                <tr key={region.id} className="hover:bg-slate-50/80 transition-colors">
+                  <td className="px-6 py-4 font-medium text-slate-900">{region.name}</td>
+                  <td className="px-6 py-4">{region.state}</td>
+                  <td className="px-6 py-4">{region.districts}</td>
+                  <td className="px-6 py-4">{region.centres}</td>
+                  <td className="px-6 py-4">{region.students}</td>
+                  <td className="px-6 py-4">
+                    <StatusChip status={region.status} />
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button className="p-1.5 text-slate-400 hover:text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors">
+                        <Edit2 size={16} />
+                      </button>
+                      <button 
+                        onClick={() => { setSelectedRegion(region.id); setIsDeleteOpen(true); }}
+                        className="p-1.5 text-slate-400 hover:text-red-600 rounded-md hover:bg-red-50 transition-colors"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <ConfirmDialog 
+        isOpen={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
         onConfirm={handleDelete}
-        onCancel={() => setDeleteId(null)}
+        title="Delete Region"
+        message="Are you sure you want to delete this region? This action cannot be undone and will affect linked districts and centres."
       />
-    </Box>
+    </div>
   );
-};
-
-export default RegionsList;
+}

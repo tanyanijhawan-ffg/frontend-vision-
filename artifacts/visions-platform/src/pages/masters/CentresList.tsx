@@ -1,286 +1,143 @@
-import React, { useState } from 'react';
-import { 
-  Box, Paper, Dialog, DialogTitle, DialogContent, DialogActions, 
-  Button, TextField, Select, MenuItem, FormControl, InputLabel, Switch, FormControlLabel,
-  Grid
-} from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs from 'dayjs';
-import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import IconButton from '@mui/material/IconButton';
-import Chip from '@mui/material/Chip';
-
+import { useState } from 'react';
+import { Search, Plus, Filter, Edit2, Trash2 } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
-import DataTableToolbar from '../../components/DataTableToolbar';
 import StatusChip from '../../components/StatusChip';
 import ConfirmDialog from '../../components/ConfirmDialog';
-import { centres as initialCentres, regions, districts } from '../../data/mockData';
+import { centres, regions, districts } from '../../data/mockData';
 
-const CentresList: React.FC = () => {
-  const [centresList, setCentresList] = useState(initialCentres);
-  const [search, setSearch] = useState('');
+export default function CentresList() {
+  const [data, setData] = useState(centres);
   const [filterRegion, setFilterRegion] = useState('All');
-  const [filterDistrict, setFilterDistrict] = useState('All');
-  
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [selectedCentre, setSelectedCentre] = useState<string | null>(null);
 
-  // Form State
-  const [formData, setFormData] = useState({
-    name: '',
-    type: '',
-    regionId: '',
-    districtId: '',
-    village: '',
-    facilitator: '',
-    startDate: dayjs(),
-    status: 'Active'
-  });
+  const filteredData = filterRegion === 'All' 
+    ? data 
+    : data.filter(c => c.region === filterRegion);
 
-  const handleOpenDialog = (centre?: any) => {
-    if (centre) {
-      setEditingId(centre.id);
-      // Map string names back to IDs for the form
-      const rId = regions.find(r => r.name === centre.region)?.id || '';
-      const dId = districts.find(d => d.name === centre.district)?.id || '';
-      
-      setFormData({
-        name: centre.name,
-        type: centre.type,
-        regionId: rId,
-        districtId: dId,
-        village: centre.village,
-        facilitator: centre.facilitator,
-        startDate: dayjs(centre.startDate),
-        status: centre.status
-      });
-    } else {
-      setEditingId(null);
-      setFormData({ 
-        name: '', type: '', regionId: '', districtId: '', 
-        village: '', facilitator: '', startDate: dayjs(), status: 'Active' 
-      });
+  const handleDelete = () => {
+    if (selectedCentre) {
+      setData(data.filter(c => c.id !== selectedCentre));
     }
-    setDialogOpen(true);
   };
 
-  const handleCloseDialog = () => setDialogOpen(false);
-
-  const columns: GridColDef[] = [
-    { field: 'name', headerName: 'Centre Name', flex: 1, minWidth: 180 },
-    { 
-      field: 'type', 
-      headerName: 'Type', 
-      width: 120,
-      renderCell: (params) => (
-        <Chip 
-          label={params.value} 
-          size="small" 
-          color={params.value === 'Urban' ? 'primary' : params.value === 'Rural' ? 'success' : 'default'} 
-          variant="outlined" 
-        />
-      )
-    },
-    { field: 'region', headerName: 'Region', flex: 1, minWidth: 150 },
-    { field: 'district', headerName: 'District', flex: 1, minWidth: 130 },
-    { field: 'facilitator', headerName: 'Facilitator', flex: 1, minWidth: 150 },
-    { 
-      field: 'status', 
-      headerName: 'Status', 
-      width: 100,
-      renderCell: (params) => <StatusChip status={params.value} />
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 100,
-      sortable: false,
-      renderCell: (params) => (
-        <Box>
-          <IconButton size="small" onClick={() => handleOpenDialog(params.row)} color="primary">
-            <EditIcon fontSize="small" />
-          </IconButton>
-        </Box>
-      )
-    }
-  ];
-
-  const filteredData = centresList.filter(c => {
-    const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase()) || 
-                          c.facilitator.toLowerCase().includes(search.toLowerCase());
-    const cRegionId = regions.find(r => r.name === c.region)?.id;
-    const matchesRegion = filterRegion === 'All' || cRegionId === filterRegion;
-    return matchesSearch && matchesRegion;
-  });
-
-  const availableDistricts = filterRegion === 'All' 
-    ? districts 
-    : districts.filter(d => d.regionId === filterRegion);
-
-  const formAvailableDistricts = formData.regionId 
-    ? districts.filter(d => d.regionId === formData.regionId)
-    : [];
-
   return (
-    <Box>
+    <div className="max-w-7xl mx-auto">
       <PageHeader 
-        title="Centre Management" 
-        subtitle="Manage learning centres and facilitators"
-        action={{ label: "Add Centre", icon: <AddIcon />, onClick: () => handleOpenDialog() }}
+        title="Learning Centres" 
+        subtitle="Manage individual learning and empowerment centres."
+        action={
+          <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <Plus size={16} />
+            Add Centre
+          </button>
+        }
       />
 
-      <Paper sx={{ width: '100%', mb: 2 }}>
-        <DataTableToolbar searchQuery={search} onSearchChange={setSearch} placeholder="Search centres, facilitators...">
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Region</InputLabel>
-            <Select
-              value={filterRegion}
-              label="Region"
-              onChange={(e) => {
-                setFilterRegion(e.target.value);
-                setFilterDistrict('All');
-              }}
-            >
-              <MenuItem value="All">All Regions</MenuItem>
-              {regions.map(r => <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>)}
-            </Select>
-          </FormControl>
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+        {/* Toolbar */}
+        <div className="p-4 border-b border-slate-200 flex flex-wrap items-center gap-4 bg-slate-50/50">
+          <div className="relative flex-1 min-w-[240px] max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search centres, villages, facilitators..." 
+              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
+            />
+          </div>
           
-          <FormControl size="small" sx={{ minWidth: 150 }} disabled={filterRegion === 'All'}>
-            <InputLabel>District</InputLabel>
-            <Select
-              value={filterDistrict}
-              label="District"
-              onChange={(e) => setFilterDistrict(e.target.value)}
+          <div className="flex items-center gap-2">
+            <Filter size={16} className="text-slate-400" />
+            <select 
+              value={filterRegion}
+              onChange={(e) => setFilterRegion(e.target.value)}
+              className="py-2 pl-3 pr-8 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none shadow-sm cursor-pointer"
             >
-              <MenuItem value="All">All Districts</MenuItem>
-              {availableDistricts.map(d => <MenuItem key={d.id} value={d.id}>{d.name}</MenuItem>)}
-            </Select>
-          </FormControl>
-        </DataTableToolbar>
-        
-        <DataGrid
-          rows={filteredData}
-          columns={columns}
-          initialState={{ pagination: { paginationModel: { page: 0, pageSize: 10 } } }}
-          pageSizeOptions={[10, 25, 50]}
-          disableRowSelectionOnClick
-          autoHeight
-          sx={{ border: 'none' }}
-        />
-      </Paper>
+              <option value="All">All Regions</option>
+              {regions.map(r => (
+                <option key={r.id} value={r.name}>{r.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
 
-      {/* Add/Edit Dialog - Wider with 2 columns */}
-      <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-        <DialogTitle>{editingId ? 'Edit Centre' : 'Add New Centre'}</DialogTitle>
-        <DialogContent dividers>
-          <Box component="form" sx={{ py: 1 }}>
-            <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Centre Name"
-                  fullWidth required
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Centre Type</InputLabel>
-                  <Select
-                    value={formData.type}
-                    label="Centre Type"
-                    onChange={(e) => setFormData({...formData, type: e.target.value})}
-                  >
-                    <MenuItem value="Urban">Urban</MenuItem>
-                    <MenuItem value="Semi-Urban">Semi-Urban</MenuItem>
-                    <MenuItem value="Rural">Rural</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Region</InputLabel>
-                  <Select
-                    value={formData.regionId}
-                    label="Region"
-                    onChange={(e) => {
-                      setFormData({...formData, regionId: e.target.value, districtId: ''});
-                    }}
-                  >
-                    {regions.map(r => <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>)}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required disabled={!formData.regionId}>
-                  <InputLabel>District</InputLabel>
-                  <Select
-                    value={formData.districtId}
-                    label="District"
-                    onChange={(e) => setFormData({...formData, districtId: e.target.value})}
-                  >
-                    {formAvailableDistricts.map(d => <MenuItem key={d.id} value={d.id}>{d.name}</MenuItem>)}
-                  </Select>
-                </FormControl>
-              </Grid>
-              
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Village / Area"
-                  fullWidth required
-                  value={formData.village}
-                  onChange={(e) => setFormData({...formData, village: e.target.value})}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Facilitator Name"
-                  fullWidth required
-                  value={formData.facilitator}
-                  onChange={(e) => setFormData({...formData, facilitator: e.target.value})}
-                />
-              </Grid>
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-slate-600 whitespace-nowrap">
+            <thead className="bg-slate-50 text-slate-700 font-medium border-b border-slate-200">
+              <tr>
+                <th className="px-6 py-3">Centre Name</th>
+                <th className="px-6 py-3">Location</th>
+                <th className="px-6 py-3">Facilitator</th>
+                <th className="px-6 py-3">Students</th>
+                <th className="px-6 py-3">Avg Attendance</th>
+                <th className="px-6 py-3">Status</th>
+                <th className="px-6 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredData.map((centre) => (
+                <tr key={centre.id} className="hover:bg-slate-50/80 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="font-medium text-slate-900">{centre.name}</div>
+                    <div className="text-xs text-slate-500 mt-0.5">{centre.type}</div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-slate-900">{centre.district}</div>
+                    <div className="text-xs text-slate-500 mt-0.5">{centre.village}</div>
+                  </td>
+                  <td className="px-6 py-4 text-slate-900">{centre.facilitator}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-1.5">
+                      <span>{centre.students}</span>
+                      {centre.highRisk > 0 && (
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-700 text-[10px] font-bold" title={`${centre.highRisk} at risk`}>
+                          {centre.highRisk}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-16 h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full rounded-full ${centre.attendance >= 90 ? 'bg-emerald-500' : centre.attendance >= 75 ? 'bg-amber-500' : 'bg-red-500'}`} 
+                          style={{ width: `${centre.attendance}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-xs font-medium">{centre.attendance}%</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <StatusChip status={centre.status} />
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button className="p-1.5 text-slate-400 hover:text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors">
+                        <Edit2 size={16} />
+                      </button>
+                      <button 
+                        onClick={() => { setSelectedCentre(centre.id); setIsDeleteOpen(true); }}
+                        className="p-1.5 text-slate-400 hover:text-red-600 rounded-md hover:bg-red-50 transition-colors"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-              <Grid item xs={12} sm={6}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker
-                    label="Start Date"
-                    value={formData.startDate}
-                    onChange={(newValue) => setFormData({...formData, startDate: newValue || dayjs()})}
-                    slotProps={{ textField: { fullWidth: true, required: true } }}
-                  />
-                </LocalizationProvider>
-              </Grid>
-              <Grid item xs={12} sm={6} sx={{ display: 'flex', alignItems: 'center' }}>
-                <FormControlLabel
-                  control={
-                    <Switch 
-                      checked={formData.status === 'Active'} 
-                      onChange={(e) => setFormData({...formData, status: e.target.checked ? 'Active' : 'Inactive'})}
-                      color="primary"
-                    />
-                  }
-                  label="Active Status"
-                />
-              </Grid>
-            </Grid>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button variant="contained" onClick={handleCloseDialog}>Save Centre</Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+      <ConfirmDialog 
+        isOpen={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete Centre"
+        message="Are you sure you want to delete this centre? This will unassign all related students and facilitators."
+      />
+    </div>
   );
-};
-
-export default CentresList;
+}

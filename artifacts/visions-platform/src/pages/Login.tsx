@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
-import { Box, Card, Typography, TextField, Button, Checkbox, FormControlLabel, Link as MuiLink, InputAdornment, IconButton } from '@mui/material';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-const Login: React.FC = () => {
-  const navigate = useNavigate();
+export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('kavitha@visionsglobal.org');
+  const [password, setPassword] = useState('Admin@123');
+  const navigate = useNavigate();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,121 +15,98 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      {/* Left Side - Brand */}
-      <Box sx={{ 
-        flex: 4, 
-        display: { xs: 'none', md: 'flex' }, 
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        p: 6,
-        background: 'linear-gradient(135deg, #0D47A1 0%, #1565C0 100%)',
-        color: 'white',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        {/* Decorative elements */}
-        <Box sx={{ position: 'absolute', top: -100, right: -100, width: 300, height: 300, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
-        <Box sx={{ position: 'absolute', bottom: -50, left: -50, width: 200, height: 200, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
+    <div className="min-h-screen w-full flex bg-white font-sans text-slate-900">
+      {/* Left Panel */}
+      <div className="hidden lg:flex lg:w-1/2 bg-slate-900 flex-col justify-between p-12 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-indigo-400 via-slate-900 to-slate-900"></div>
+        
+        <div className="relative z-10">
+          <h1 className="text-4xl font-bold text-white tracking-tight mb-2">Visions Global Empowerment</h1>
+          <p className="text-indigo-400 text-lg font-medium">Learning & Empowerment Platform</p>
+        </div>
 
-        <Box sx={{ zIndex: 1, textAlign: 'center' }}>
-          <Typography variant="h2" fontWeight="bold" sx={{ mb: 2, letterSpacing: -1 }}>
-            Visions LEP
-          </Typography>
-          <Typography variant="h5" sx={{ opacity: 0.9, maxWidth: 400, mx: 'auto', fontWeight: 300, lineHeight: 1.5 }}>
-            Empowering Communities, Transforming Lives
-          </Typography>
-        </Box>
-      </Box>
+        <div className="relative z-10 max-w-md">
+          <blockquote className="text-xl text-slate-300 leading-relaxed font-light mb-6">
+            "Empowering marginalized youth through education, leadership, and personal development across South India."
+          </blockquote>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-1 bg-indigo-500 rounded-full"></div>
+            <p className="text-slate-400 text-sm">System Administration</p>
+          </div>
+        </div>
+      </div>
 
-      {/* Right Side - Form */}
-      <Box sx={{ 
-        flex: 6, 
-        display: 'flex', 
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        p: { xs: 3, sm: 6 },
-        bgcolor: 'background.default'
-      }}>
-        <Box sx={{ width: '100%', maxWidth: 480 }}>
-          {/* Mobile Logo */}
-          <Box sx={{ display: { md: 'none' }, mb: 4, textAlign: 'center' }}>
-            <Typography variant="h4" color="primary.main" fontWeight="bold">
-              Visions LEP
-            </Typography>
-          </Box>
+      {/* Right Panel */}
+      <div className="flex-1 flex flex-col justify-center p-8 sm:p-12 lg:p-24 relative">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-sm mx-auto"
+        >
+          <div className="mb-10 text-center lg:text-left lg:hidden">
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">Visions LEP</h1>
+            <p className="text-slate-500">Learning & Empowerment Platform</p>
+          </div>
 
-          <Card sx={{ p: { xs: 3, sm: 5 }, borderRadius: 2, boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="h5" fontWeight="bold" gutterBottom>
-                Welcome back
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Please enter your details to access the platform.
-              </Typography>
-            </Box>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Welcome back</h2>
+          <p className="text-slate-500 mb-8">Please enter your details to sign in.</p>
 
-            <form onSubmit={handleLogin}>
-              <TextField
-                fullWidth
-                label="Email Address"
-                variant="outlined"
-                margin="normal"
-                required
-                defaultValue="admin@visionsglobal.org"
-                sx={{ mb: 3 }}
-              />
-              
-              <TextField
-                fullWidth
-                label="Password"
-                type={showPassword ? 'text' : 'password'}
-                variant="outlined"
-                margin="normal"
-                required
-                defaultValue="password123"
-                sx={{ mb: 2 }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                <FormControlLabel
-                  control={<Checkbox color="primary" defaultChecked />}
-                  label={<Typography variant="body2">Remember me</Typography>}
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input 
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
+                  required
                 />
-                <MuiLink component={Link} to="/forgot-password" variant="body2" color="primary.main" underline="hover" fontWeight={500}>
-                  Forgot Password?
-                </MuiLink>
-              </Box>
+              </div>
+            </div>
 
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                size="large"
-                sx={{ py: 1.5, fontSize: '1rem' }}
-              >
-                Sign In
-              </Button>
-            </form>
-          </Card>
-        </Box>
-      </Box>
-    </Box>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-10 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
+                  required
+                />
+                <button 
+                  type="button" 
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+                <span className="text-sm text-slate-600">Remember me</span>
+              </label>
+              <Link to="/forgot-password" className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
+                Forgot password?
+              </Link>
+            </div>
+
+            <button 
+              type="submit" 
+              className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 outline-none mt-2"
+            >
+              Sign In
+            </button>
+          </form>
+        </motion.div>
+      </div>
+    </div>
   );
-};
-
-export default Login;
+}

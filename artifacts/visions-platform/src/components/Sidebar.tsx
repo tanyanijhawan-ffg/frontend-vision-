@@ -1,225 +1,176 @@
-import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { 
-  Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, 
-  Collapse, Typography, IconButton, useTheme, useMediaQuery, Divider
-} from '@mui/material';
-import { useLocation, useNavigate } from 'react-router-dom';
+  LayoutDashboard, 
+  Map, 
+  Users, 
+  CalendarCheck, 
+  GraduationCap, 
+  BarChart3, 
+  Settings, 
+  ShieldAlert,
+  Menu,
+  ChevronDown,
+  X
+} from 'lucide-react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import StorageIcon from '@mui/icons-material/Storage';
-import PeopleIcon from '@mui/icons-material/People';
-import EventNoteIcon from '@mui/icons-material/EventNote';
-import SchoolIcon from '@mui/icons-material/School';
-import AssessmentIcon from '@mui/icons-material/Assessment';
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
-import SettingsIcon from '@mui/icons-material/Settings';
-import ExpandLess from '@mui/icons-material/ExpandLess';
-import ExpandMore from '@mui/icons-material/ExpandMore';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import MenuIcon from '@mui/icons-material/Menu';
+const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(' ');
 
-interface SidebarProps {
-  open: boolean;
-  onClose: () => void;
-  collapsed: boolean;
-  onToggleCollapse: () => void;
-}
+const navItems = [
+  { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+  { 
+    name: 'Masters', 
+    icon: Map, 
+    children: [
+      { name: 'Regions', path: '/masters/regions' },
+      { name: 'Districts', path: '/masters/districts' },
+      { name: 'Centres', path: '/masters/centres' },
+    ]
+  },
+  { name: 'Students', icon: Users, path: '/students' },
+  { 
+    name: 'Attendance', 
+    icon: CalendarCheck, 
+    children: [
+      { name: 'Dashboard', path: '/attendance' },
+      { name: 'Entry', path: '/attendance/entry' },
+    ]
+  },
+  { 
+    name: 'Academics', 
+    icon: GraduationCap, 
+    children: [
+      { name: 'Dashboard', path: '/academics' },
+      { name: 'Entry', path: '/academics/entry' },
+    ]
+  },
+  { name: 'Reports', icon: BarChart3, path: '/reports' },
+  { name: 'Users', icon: ShieldAlert, path: '/users' },
+  { name: 'Settings', icon: Settings, path: '/settings' },
+];
 
-const SIDEBAR_WIDTH = 240;
-const COLLAPSED_WIDTH = 68;
-
-const Sidebar: React.FC<SidebarProps> = ({ open, onClose, collapsed, onToggleCollapse }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (v: boolean) => void }) {
   const location = useLocation();
-  const navigate = useNavigate();
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    Masters: location.pathname.startsWith('/masters'),
+    Attendance: location.pathname.startsWith('/attendance'),
+    Academics: location.pathname.startsWith('/academics'),
+  });
 
-  const [mastersOpen, setMastersOpen] = useState(location.pathname.startsWith('/masters'));
-  const [attendanceOpen, setAttendanceOpen] = useState(location.pathname.startsWith('/attendance'));
-  const [academicsOpen, setAcademicsOpen] = useState(location.pathname.startsWith('/academics'));
-
-  const navItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { 
-      text: 'Masters', 
-      icon: <StorageIcon />, 
-      path: '/masters',
-      expandable: true,
-      open: mastersOpen,
-      setOpen: setMastersOpen,
-      children: [
-        { text: 'Regions', path: '/masters/regions' },
-        { text: 'Districts', path: '/masters/districts' },
-        { text: 'Centres', path: '/masters/centres' },
-      ]
-    },
-    { text: 'Students', icon: <PeopleIcon />, path: '/students' },
-    { 
-      text: 'Attendance', 
-      icon: <EventNoteIcon />, 
-      path: '/attendance',
-      expandable: true,
-      open: attendanceOpen,
-      setOpen: setAttendanceOpen,
-      children: [
-        { text: 'Dashboard', path: '/attendance' },
-        { text: 'Entry', path: '/attendance/entry' },
-      ]
-    },
-    { 
-      text: 'Academics', 
-      icon: <SchoolIcon />, 
-      path: '/academics',
-      expandable: true,
-      open: academicsOpen,
-      setOpen: setAcademicsOpen,
-      children: [
-        { text: 'Dashboard', path: '/academics' },
-        { text: 'Entry', path: '/academics/entry' },
-      ]
-    },
-    { text: 'Reports', icon: <AssessmentIcon />, path: '/reports' },
-    { text: 'Users', icon: <ManageAccountsIcon />, path: '/users' },
-    { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
-  ];
-
-  const handleNavClick = (item: any) => {
-    if (item.expandable) {
-      if (collapsed) {
-        onToggleCollapse();
-      }
-      item.setOpen(!item.open);
-    } else {
-      navigate(item.path);
-      if (isMobile) onClose();
-    }
+  const toggleGroup = (name: string) => {
+    setOpenGroups(prev => ({ ...prev, [name]: !prev[name] }));
   };
 
-  const drawerContent = (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Box sx={{ 
-        height: 64, 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: collapsed ? 'center' : 'space-between',
-        px: collapsed ? 0 : 2,
-        borderBottom: 1,
-        borderColor: 'divider',
-        bgcolor: 'primary.main',
-        color: 'white'
-      }}>
-        {!collapsed && (
-          <Typography variant="h6" fontWeight="bold" sx={{ whiteSpace: 'nowrap' }}>
+  return (
+    <div className={cn(
+      "flex flex-col bg-slate-900 text-slate-300 transition-all duration-300 ease-in-out border-r border-slate-800 z-20 shadow-xl",
+      isOpen ? "w-64" : "w-20"
+    )}>
+      {/* Brand */}
+      <div className="flex items-center justify-between h-16 px-4 border-b border-slate-800">
+        {isOpen && (
+          <span className="text-white font-bold text-lg tracking-wide whitespace-nowrap overflow-hidden">
             Visions LEP
-          </Typography>
+          </span>
         )}
-        {collapsed ? (
-          <IconButton onClick={onToggleCollapse} sx={{ color: 'white' }}>
-            <MenuIcon />
-          </IconButton>
-        ) : (
-          <IconButton onClick={onToggleCollapse} sx={{ color: 'white', display: { xs: 'none', sm: 'flex' } }}>
-            <ChevronLeftIcon />
-          </IconButton>
-        )}
-      </Box>
+        <button onClick={() => setIsOpen(!isOpen)} className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors mx-auto">
+          {isOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+      </div>
 
-      <Box sx={{ flex: 1, overflow: 'auto', py: 1 }}>
-        <List sx={{ px: 1 }}>
-          {navItems.map((item, index) => {
-            const isParentActive = item.children ? item.children.some(c => location.pathname === c.path || location.pathname.startsWith(c.path + '/')) : location.pathname.startsWith(item.path);
-            const isActive = !item.expandable && location.pathname.startsWith(item.path);
-
-            return (
-              <React.Fragment key={index}>
-                <ListItem disablePadding sx={{ mb: 0.5 }}>
-                  <ListItemButton 
-                    onClick={() => handleNavClick(item)}
-                    sx={{
-                      minHeight: 44,
-                      borderRadius: 1,
-                      justifyContent: collapsed ? 'center' : 'initial',
-                      px: 2,
-                      bgcolor: isActive ? 'primary.50' : 'transparent',
-                      color: isActive ? 'primary.main' : 'text.primary',
-                      '&:hover': {
-                        bgcolor: isActive ? 'primary.100' : 'action.hover',
-                      }
+      {/* Nav */}
+      <div className="flex-1 overflow-y-auto py-4 custom-scrollbar">
+        <ul className="space-y-1 px-3">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            if (item.children) {
+              const isGroupActive = item.children.some(child => location.pathname === child.path);
+              return (
+                <li key={item.name} className="mb-1">
+                  <button 
+                    onClick={() => {
+                      if (!isOpen) setIsOpen(true);
+                      toggleGroup(item.name);
                     }}
+                    className={cn(
+                      "w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors group",
+                      isGroupActive ? "text-white bg-slate-800/50" : "hover:bg-slate-800 hover:text-white"
+                    )}
                   >
-                    <ListItemIcon sx={{ 
-                      minWidth: 0, 
-                      mr: collapsed ? 0 : 2, 
-                      justifyContent: 'center',
-                      color: isActive || isParentActive ? 'primary.main' : 'text.secondary'
-                    }}>
-                      {item.icon}
-                    </ListItemIcon>
-                    {!collapsed && <ListItemText primary={item.text} primaryTypographyProps={{ fontSize: '0.875rem', fontWeight: isActive || isParentActive ? 600 : 500 }} />}
-                    {!collapsed && item.expandable && (item.open ? <ExpandLess /> : <ExpandMore />)}
-                  </ListItemButton>
-                </ListItem>
-                
-                {!collapsed && item.expandable && (
-                  <Collapse in={item.open} timeout="auto" unmountOnExit>
-                    <List component="div" disablePadding sx={{ pl: 3, pr: 1, mb: 1 }}>
-                      {item.children.map((child, cIndex) => {
-                        const isChildActive = location.pathname === child.path || (child.path !== item.path && location.pathname.startsWith(child.path));
-                        return (
-                          <ListItemButton 
-                            key={cIndex} 
-                            onClick={() => { navigate(child.path); if(isMobile) onClose(); }}
-                            sx={{
-                              borderRadius: 1,
-                              py: 0.75,
-                              mb: 0.5,
-                              bgcolor: isChildActive ? 'action.selected' : 'transparent',
-                              color: isChildActive ? 'primary.main' : 'text.secondary',
-                            }}
-                          >
-                            <ListItemText primary={child.text} primaryTypographyProps={{ fontSize: '0.875rem', fontWeight: isChildActive ? 600 : 400 }} />
-                          </ListItemButton>
-                        );
-                      })}
-                    </List>
-                  </Collapse>
-                )}
-              </React.Fragment>
+                    <div className="flex items-center gap-3">
+                      <Icon size={20} className={cn("shrink-0", isGroupActive ? "text-indigo-400" : "text-slate-400 group-hover:text-slate-300")} />
+                      {isOpen && <span className="font-medium text-sm">{item.name}</span>}
+                    </div>
+                    {isOpen && (
+                      <ChevronDown size={16} className={cn("transition-transform", openGroups[item.name] && "rotate-180")} />
+                    )}
+                  </button>
+                  <AnimatePresence>
+                    {isOpen && openGroups[item.name] && (
+                      <motion.ul 
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden mt-1 space-y-1 pl-9 pr-2"
+                      >
+                        {item.children.map(child => {
+                          const childActive = location.pathname === child.path;
+                          return (
+                            <li key={child.name}>
+                              <Link 
+                                to={child.path}
+                                className={cn(
+                                  "block px-3 py-2 rounded-lg text-sm transition-colors",
+                                  childActive ? "bg-indigo-600 text-white font-medium shadow-sm" : "text-slate-400 hover:text-white hover:bg-slate-800"
+                                )}
+                              >
+                                {child.name}
+                              </Link>
+                            </li>
+                          );
+                        })}
+                      </motion.ul>
+                    )}
+                  </AnimatePresence>
+                </li>
+              );
+            }
+
+            const active = location.pathname === item.path || (item.path !== '/dashboard' && location.pathname.startsWith(item.path + '/'));
+            return (
+              <li key={item.name} className="mb-1">
+                <Link 
+                  to={item.path!}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all group",
+                    active ? "bg-indigo-600 text-white shadow-sm" : "hover:bg-slate-800 hover:text-white"
+                  )}
+                  title={!isOpen ? item.name : undefined}
+                >
+                  <Icon size={20} className={cn("shrink-0", active ? "text-white" : "text-slate-400 group-hover:text-slate-300")} />
+                  {isOpen && <span className="font-medium text-sm">{item.name}</span>}
+                </Link>
+              </li>
             );
           })}
-        </List>
-      </Box>
+        </ul>
+      </div>
 
-      <Divider />
-      {!collapsed && (
-        <Box sx={{ p: 2 }}>
-          <Typography variant="body2" fontWeight="bold">Kavitha Mani</Typography>
-          <Typography variant="caption" color="text.secondary">Super Admin</Typography>
-        </Box>
-      )}
-    </Box>
+      {/* User */}
+      <div className="p-4 border-t border-slate-800">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold shrink-0 border border-indigo-500/30">
+            KM
+          </div>
+          {isOpen && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-white truncate">Kavitha Mani</p>
+              <p className="text-xs text-slate-400 truncate">Super Admin</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
-
-  return (
-    <Box component="nav" sx={{ width: { sm: collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH }, flexShrink: { sm: 0 }, transition: 'width 0.2s' }}>
-      <Drawer
-        variant={isMobile ? "temporary" : "permanent"}
-        open={isMobile ? open : true}
-        onClose={onClose}
-        ModalProps={{ keepMounted: true }}
-        sx={{
-          '& .MuiDrawer-paper': { 
-            boxSizing: 'border-box', 
-            width: isMobile ? SIDEBAR_WIDTH : (collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH),
-            transition: 'width 0.2s',
-            overflowX: 'hidden'
-          },
-        }}
-      >
-        {drawerContent}
-      </Drawer>
-    </Box>
-  );
-};
-
-export default Sidebar;
+}

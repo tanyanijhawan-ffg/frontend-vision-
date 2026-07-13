@@ -1,39 +1,20 @@
-import React, { useState } from 'react';
-import { Box, Toolbar } from '@mui/material';
 import { Outlet } from 'react-router-dom';
-import Navbar from './Navbar';
 import Sidebar from './Sidebar';
+import Navbar from './Navbar';
+import { useState } from 'react';
 
-const AppLayout: React.FC = () => {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const handleCollapseToggle = () => {
-    setCollapsed(!collapsed);
-  };
+export default function AppLayout() {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
-      <Sidebar 
-        open={mobileOpen} 
-        onClose={handleDrawerToggle} 
-        collapsed={collapsed}
-        onToggleCollapse={handleCollapseToggle}
-      />
-      
-      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', width: '100%', overflow: 'hidden' }}>
-        <Navbar onToggleSidebar={handleDrawerToggle} />
-        
-        <Box component="main" sx={{ flexGrow: 1, p: { xs: 2, sm: 3 }, overflowY: 'auto' }}>
+    <div className="flex h-screen w-full bg-slate-50 overflow-hidden text-slate-900 font-sans">
+      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+        <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
           <Outlet />
-        </Box>
-      </Box>
-    </Box>
+        </main>
+      </div>
+    </div>
   );
-};
-
-export default AppLayout;
+}

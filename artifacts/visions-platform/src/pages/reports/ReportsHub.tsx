@@ -1,92 +1,49 @@
-import React from 'react';
-import { Box, Grid, Card, CardContent, Typography, Avatar, CardActionArea } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import PersonIcon from '@mui/icons-material/Person';
-import BusinessIcon from '@mui/icons-material/Business';
-import MapIcon from '@mui/icons-material/Map';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-
+import { FileText, Download, Users, Map, Building2 } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
+import { Link } from 'react-router-dom';
 
-const reportTypes = [
-  { 
-    id: 'students', 
-    title: 'Student Report', 
-    desc: 'Individual student academic, attendance, and vulnerability data.', 
-    icon: <PersonIcon />, 
-    color: '#1565C0',
-    path: '/reports/students'
-  },
-  { 
-    id: 'centres', 
-    title: 'Centre Report', 
-    desc: 'Centre-wise performance summary and operational metrics.', 
-    icon: <BusinessIcon />, 
-    color: '#2E7D32',
-    path: '/reports/centres'
-  },
-  { 
-    id: 'districts', 
-    title: 'District Report', 
-    desc: 'Aggregated data at the district level for regional oversight.', 
-    icon: <LocationOnIcon />, 
-    color: '#E65100',
-    path: '/reports/districts'
-  },
-  { 
-    id: 'regions', 
-    title: 'Region Report', 
-    desc: 'High-level comparison of regions across the entire platform.', 
-    icon: <MapIcon />, 
-    color: '#6A1B9A',
-    path: '/reports/regions'
-  },
+const reports = [
+  { id: 'students', name: 'Student Report', icon: Users, desc: 'Detailed data on demographics, attendance, and academics per student.', path: '/reports/students', color: 'text-indigo-600', bg: 'bg-indigo-50' },
+  { id: 'centres', name: 'Centre Report', icon: Building2, desc: 'Aggregated centre performance, facilitator details, and risk flags.', path: '/reports/centres', color: 'text-emerald-600', bg: 'bg-emerald-50' },
+  { id: 'districts', name: 'District Report', icon: Map, desc: 'District-wide metrics comparing multiple centres.', path: '/reports/districts', color: 'text-amber-600', bg: 'bg-amber-50' },
+  { id: 'regions', name: 'Regional Report', icon: FileText, desc: 'High-level regional overview for executive summary.', path: '/reports/regions', color: 'text-purple-600', bg: 'bg-purple-50' },
 ];
 
-const ReportsHub: React.FC = () => {
-  const navigate = useNavigate();
-
+export default function ReportsHub() {
   return (
-    <Box>
+    <div className="max-w-7xl mx-auto space-y-6">
       <PageHeader 
         title="Reports Hub" 
-        subtitle="Generate and export comprehensive data reports"
+        subtitle="Generate and export data insights across the organization."
       />
 
-      <Grid container spacing={3}>
-        {reportTypes.map((report) => (
-          <Grid item xs={12} sm={6} key={report.id}>
-            <Card sx={{ height: '100%', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-4px)', boxShadow: 3 } }}>
-              <CardActionArea onClick={() => navigate(report.path)} sx={{ height: '100%', p: 1 }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Avatar sx={{ bgcolor: `${report.color}15`, color: report.color, width: 48, height: 48, mr: 2 }}>
-                      {report.icon}
-                    </Avatar>
-                    <Typography variant="h6">{report.title}</Typography>
-                  </Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ minHeight: 40 }}>
-                    {report.desc}
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-      
-      <Box sx={{ mt: 6, p: 4, bgcolor: 'grey.50', borderRadius: 2, border: '1px dashed', borderColor: 'divider', textAlign: 'center' }}>
-        <Avatar sx={{ m: '0 auto', mb: 2, bgcolor: 'error.50', color: 'error.main' }}>
-          <PictureAsPdfIcon />
-        </Avatar>
-        <Typography variant="h6" gutterBottom>Custom PDF Export</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 500, mx: 'auto' }}>
-          Need a specific format? Use the individual report pages to filter data exactly as you need it, then click Export PDF or Excel on those pages.
-        </Typography>
-      </Box>
-    </Box>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {reports.map(report => {
+          const Icon = report.icon;
+          return (
+            <div key={report.id} className="bg-white border border-slate-200 rounded-xl shadow-sm p-6 flex flex-col transition-shadow hover:shadow-md">
+              <div className="flex items-start gap-4 mb-6">
+                <div className={`p-3 rounded-xl ${report.bg} ${report.color}`}>
+                  <Icon size={24} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">{report.name}</h3>
+                  <p className="text-sm text-slate-500 mt-1">{report.desc}</p>
+                </div>
+              </div>
+              <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
+                <span className="text-xs text-slate-400 font-medium">Export formats: PDF, Excel, CSV</span>
+                <Link 
+                  to={report.path}
+                  className="px-4 py-2 bg-slate-50 hover:bg-indigo-50 text-indigo-600 rounded-lg text-sm font-medium transition-colors"
+                >
+                  View Report
+                </Link>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
-};
-
-export default ReportsHub;
+}

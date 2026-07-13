@@ -1,68 +1,50 @@
-import React from 'react';
-import { Box, Card, Typography, TextField, Button, Link as MuiLink } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { Link } from 'react-router-dom';
+import { Mail, ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-const ForgotPassword: React.FC = () => {
-  const navigate = useNavigate();
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Simulate sending email
-    setTimeout(() => {
-      navigate('/reset-password');
-    }, 1000);
-  };
-
+export default function ForgotPassword() {
   return (
-    <Box sx={{ 
-      minHeight: '100vh', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      bgcolor: 'background.default',
-      p: 2
-    }}>
-      <Card sx={{ p: { xs: 3, sm: 5 }, borderRadius: 2, width: '100%', maxWidth: 440, boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
-        <Box sx={{ mb: 4, textAlign: 'center' }}>
-          <Typography variant="h5" fontWeight="bold" gutterBottom>
-            Reset your password
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Enter the email address associated with your account and we'll send you a link to reset your password.
-          </Typography>
-        </Box>
-
-        <form onSubmit={handleSubmit}>
-          <TextField
-            fullWidth
-            label="Email Address"
-            variant="outlined"
-            margin="normal"
-            required
-            type="email"
-            sx={{ mb: 3 }}
-          />
-
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            size="large"
-            sx={{ py: 1.5, mb: 3 }}
+    <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 p-4 font-sans text-slate-900">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 p-8"
+      >
+        <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mb-6">
+          <Mail size={24} />
+        </div>
+        
+        <h1 className="text-2xl font-bold mb-2">Forgot password?</h1>
+        <p className="text-slate-500 text-sm mb-6">
+          No worries, we'll send you reset instructions.
+        </p>
+        
+        <form className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+            <input 
+              type="email" 
+              placeholder="Enter your email"
+              className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
+              required
+            />
+          </div>
+          
+          <button 
+            type="submit" 
+            className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 outline-none"
           >
-            Send Reset Link
-          </Button>
-
-          <Box sx={{ textAlign: 'center' }}>
-            <MuiLink component={Link} to="/login" variant="body2" color="text.secondary" underline="hover" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-              <ArrowBackIcon fontSize="small" /> Back to login
-            </MuiLink>
-          </Box>
+            Reset password
+          </button>
         </form>
-      </Card>
-    </Box>
+        
+        <div className="mt-8 text-center">
+          <Link to="/login" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
+            <ArrowLeft size={16} />
+            Back to login
+          </Link>
+        </div>
+      </motion.div>
+    </div>
   );
-};
-
-export default ForgotPassword;
+}

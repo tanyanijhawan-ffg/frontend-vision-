@@ -1,126 +1,32 @@
-import React, { useState } from 'react';
-import { Box, IconButton, Badge, Avatar, Menu, MenuItem, InputBase, Popover, Typography, List, ListItem, ListItemText, Divider } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import SearchIcon from '@mui/icons-material/Search';
-import { useNavigate } from 'react-router-dom';
+import { Search, Bell } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-interface NavbarProps {
-  onToggleSidebar: () => void;
-}
-
-const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
-  const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
-
-  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleProfileMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLogout = () => {
-    handleProfileMenuClose();
-    navigate('/login');
-  };
-
-  const handleProfile = () => {
-    handleProfileMenuClose();
-    navigate('/settings/profile');
-  };
-
-  const handleNotifOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setNotifAnchorEl(event.currentTarget);
-  };
-
-  const handleNotifClose = () => {
-    setNotifAnchorEl(null);
-  };
-
+export default function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
   return (
-    <Box sx={{
-      height: 64,
-      display: 'flex',
-      alignItems: 'center',
-      px: 2,
-      bgcolor: 'background.paper',
-      borderBottom: 1,
-      borderColor: 'divider',
-      justifyContent: 'space-between'
-    }}>
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <IconButton onClick={onToggleSidebar} edge="start" sx={{ mr: 2, display: { sm: 'none' } }}>
-          <MenuIcon />
-        </IconButton>
-        
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          bgcolor: 'grey.100', 
-          borderRadius: 1, 
-          px: 2, 
-          py: 0.5,
-          width: { xs: 200, sm: 300 }
-        }}>
-          <SearchIcon sx={{ color: 'text.secondary', mr: 1, fontSize: 20 }} />
-          <InputBase placeholder="Search students, centres..." sx={{ flex: 1, fontSize: '0.875rem' }} />
-        </Box>
-      </Box>
-
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <IconButton color="inherit" onClick={handleNotifOpen}>
-          <Badge badgeContent={4} color="error">
-            <NotificationsIcon />
-          </Badge>
-        </IconButton>
-
-        <Popover
-          open={Boolean(notifAnchorEl)}
-          anchorEl={notifAnchorEl}
-          onClose={handleNotifClose}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        >
-          <Box sx={{ width: 300, py: 1 }}>
-            <Typography variant="subtitle2" sx={{ px: 2, pb: 1, fontWeight: 600 }}>Notifications</Typography>
-            <Divider />
-            <List sx={{ p: 0 }}>
-              <ListItem button>
-                <ListItemText primary="Low attendance alert" secondary="Karthik Selvam (< 80%)" primaryTypographyProps={{ variant: 'body2' }} secondaryTypographyProps={{ variant: 'caption' }} />
-              </ListItem>
-              <Divider />
-              <ListItem button>
-                <ListItemText primary="Assessments due" secondary="Madurai Centre A" primaryTypographyProps={{ variant: 'body2' }} secondaryTypographyProps={{ variant: 'caption' }} />
-              </ListItem>
-            </List>
-            <Divider />
-            <Typography variant="button" sx={{ display: 'block', textAlign: 'center', pt: 1, color: 'primary.main', cursor: 'pointer' }}>
-              View All
-            </Typography>
-          </Box>
-        </Popover>
-
-        <IconButton edge="end" onClick={handleProfileMenuOpen}>
-          <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '0.875rem' }}>KM</Avatar>
-        </IconButton>
-
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleProfileMenuClose}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        >
-          <MenuItem onClick={handleProfile}>Profile Settings</MenuItem>
-          <Divider />
-          <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>Logout</MenuItem>
-        </Menu>
-      </Box>
-    </Box>
+    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 z-10 shrink-0">
+      <div className="flex-1 flex items-center">
+        <div className="relative w-full max-w-md hidden sm:block">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input 
+            type="text" 
+            placeholder="Search students, centres..." 
+            className="w-full pl-10 pr-4 py-2 bg-slate-100 border-transparent rounded-lg text-sm focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+          />
+        </div>
+      </div>
+      
+      <div className="flex items-center gap-4">
+        <button className="relative p-2 text-slate-500 hover:text-slate-700 transition-colors rounded-full hover:bg-slate-100">
+          <Bell size={20} />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+        </button>
+        <div className="h-8 w-px bg-slate-200"></div>
+        <Link to="/settings/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <div className="h-9 w-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm border border-indigo-200">
+            KM
+          </div>
+        </Link>
+      </div>
+    </header>
   );
-};
-
-export default Navbar;
+}

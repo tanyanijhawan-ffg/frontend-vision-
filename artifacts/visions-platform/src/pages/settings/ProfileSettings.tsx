@@ -1,78 +1,43 @@
-import React, { useState } from 'react';
-import { Box, Paper, Typography, TextField, Button, Grid, Avatar, Divider, IconButton, Snackbar, Alert } from '@mui/material';
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
-
-const ProfileSettings: React.FC = () => {
-  const [toastOpen, setToastOpen] = useState(false);
-
-  const handleSave = () => {
-    setToastOpen(true);
-  };
-
+export default function ProfileSettings() {
   return (
-    <Box>
-      <Paper sx={{ p: 4, mb: 4 }}>
-        <Typography variant="h6" sx={{ mb: 3 }}>Personal Information</Typography>
+    <div className="p-6 md:p-8">
+      <h2 className="text-lg font-bold text-slate-900 mb-6">Profile Settings</h2>
+      <div className="space-y-6 max-w-lg">
+        <div className="flex items-center gap-6">
+          <div className="h-20 w-20 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-2xl font-bold border border-indigo-200">
+            KM
+          </div>
+          <div>
+            <button className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium shadow-sm hover:bg-slate-50 transition-colors">
+              Change Avatar
+            </button>
+            <p className="text-xs text-slate-500 mt-2">JPG, GIF or PNG. 1MB max.</p>
+          </div>
+        </div>
         
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4, gap: 3 }}>
-          <Box sx={{ position: 'relative' }}>
-            <Avatar sx={{ width: 80, height: 80, bgcolor: 'primary.main', fontSize: '2rem' }}>KM</Avatar>
-            <IconButton 
-              sx={{ position: 'absolute', bottom: -5, right: -5, bgcolor: 'background.paper', boxShadow: 1, '&:hover': { bgcolor: 'grey.100' } }}
-              size="small"
-            >
-              <PhotoCameraIcon fontSize="small" color="primary" />
-            </IconButton>
-          </Box>
-          <Box>
-            <Typography variant="subtitle1" fontWeight="bold">Profile Picture</Typography>
-            <Typography variant="body2" color="text.secondary">JPG, GIF or PNG. Max size of 800K</Typography>
-          </Box>
-        </Box>
-
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6}>
-            <TextField label="Full Name" fullWidth defaultValue="Kavitha Mani" />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField label="Designation" fullWidth defaultValue="Super Admin" />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField label="Email Address" fullWidth defaultValue="kavitha@visionsglobal.org" disabled helperText="Contact support to change your email" />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField label="Phone Number" fullWidth defaultValue="+91 98765 43210" />
-          </Grid>
-        </Grid>
+        <div className="space-y-4 border-t border-slate-100 pt-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-slate-700">First Name</label>
+              <input type="text" defaultValue="Kavitha" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-slate-700">Last Name</label>
+              <input type="text" defaultValue="Mani" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Email Address</label>
+            <input type="email" defaultValue="kavitha@visionsglobal.org" disabled className="w-full px-3 py-2 bg-slate-50 border border-slate-200 text-slate-500 rounded-lg text-sm cursor-not-allowed" />
+          </div>
+        </div>
         
-        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-          <Button variant="contained" onClick={handleSave}>Save Changes</Button>
-        </Box>
-      </Paper>
-
-      <Paper sx={{ p: 4 }}>
-        <Typography variant="h6" sx={{ mb: 3 }}>Change Password</Typography>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <TextField label="Current Password" type="password" fullWidth />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField label="New Password" type="password" fullWidth />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField label="Confirm New Password" type="password" fullWidth />
-          </Grid>
-        </Grid>
-        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-          <Button variant="contained" color="primary" onClick={handleSave}>Update Password</Button>
-        </Box>
-      </Paper>
-
-      <Snackbar open={toastOpen} autoHideDuration={3000} onClose={() => setToastOpen(false)}>
-        <Alert severity="success" sx={{ width: '100%' }}>Profile updated successfully!</Alert>
-      </Snackbar>
-    </Box>
+        <div className="pt-6 flex justify-end">
+          <button className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors">
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
   );
-};
-
-export default ProfileSettings;
+}

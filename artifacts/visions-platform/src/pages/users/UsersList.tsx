@@ -1,121 +1,90 @@
-import React, { useState } from 'react';
-import { Box, Paper, Avatar, Typography, Chip, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import IconButton from '@mui/material/IconButton';
-
+import { useState } from 'react';
+import { Search, Plus, Edit2, ShieldAlert } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
-import DataTableToolbar from '../../components/DataTableToolbar';
 import StatusChip from '../../components/StatusChip';
 import { users } from '../../data/mockData';
 
-const UsersList: React.FC = () => {
-  const [search, setSearch] = useState('');
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', role: 'Facilitator' });
-
-  const handleOpen = () => setDialogOpen(true);
-  const handleClose = () => setDialogOpen(false);
-
-  const columns: GridColDef[] = [
-    { 
-      field: 'name', 
-      headerName: 'User', 
-      flex: 1, 
-      minWidth: 200,
-      renderCell: (params: GridRenderCellParams) => (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '0.875rem' }}>
-            {params.value.charAt(0)}
-          </Avatar>
-          <Box>
-            <Typography variant="body2" fontWeight={500}>{params.value}</Typography>
-            <Typography variant="caption" color="text.secondary">{params.row.email}</Typography>
-          </Box>
-        </Box>
-      )
-    },
-    { 
-      field: 'role', 
-      headerName: 'Role', 
-      width: 150,
-      renderCell: (params) => {
-        let color: any = 'default';
-        if(params.value === 'Super Admin') color = 'secondary';
-        if(params.value === 'Regional Admin') color = 'primary';
-        if(params.value === 'Facilitator') color = 'success';
-        return <Chip label={params.value} size="small" color={color} variant="outlined" />;
-      }
-    },
-    { field: 'region', headerName: 'Assigned Region', flex: 1, minWidth: 150 },
-    { field: 'centre', headerName: 'Assigned Centre', flex: 1, minWidth: 150 },
-    { field: 'lastLogin', headerName: 'Last Login', width: 160 },
-    { field: 'status', headerName: 'Status', width: 100, renderCell: (params) => <StatusChip status={params.value} /> },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 80,
-      sortable: false,
-      renderCell: () => (
-        <IconButton size="small" color="primary">
-          <EditIcon fontSize="small" />
-        </IconButton>
-      )
-    }
-  ];
-
-  const filteredData = users.filter(u => 
-    u.name.toLowerCase().includes(search.toLowerCase()) || 
-    u.email.toLowerCase().includes(search.toLowerCase())
-  );
-
+export default function UsersList() {
   return (
-    <Box>
+    <div className="max-w-7xl mx-auto space-y-6">
       <PageHeader 
-        title="User Management" 
-        subtitle="Manage platform access and role permissions"
-        action={{ label: "Add User", icon: <AddIcon />, onClick: handleOpen }}
+        title="System Users" 
+        subtitle="Manage platform access, roles, and permissions."
+        action={
+          <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+            <Plus size={16} />
+            Add User
+          </button>
+        }
       />
 
-      <Paper sx={{ width: '100%', mb: 2 }}>
-        <DataTableToolbar searchQuery={search} onSearchChange={setSearch} placeholder="Search users by name, email..." />
-        <DataGrid
-          rows={filteredData}
-          columns={columns}
-          initialState={{ pagination: { paginationModel: { page: 0, pageSize: 10 } } }}
-          pageSizeOptions={[10, 25]}
-          disableRowSelectionOnClick
-          autoHeight
-          rowHeight={60}
-          sx={{ border: 'none' }}
-        />
-      </Paper>
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+        <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search users..." 
+              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
+            />
+          </div>
+        </div>
 
-      <Dialog open={dialogOpen} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Add New User</DialogTitle>
-        <DialogContent dividers>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, py: 1 }}>
-            <TextField label="Full Name" fullWidth required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-            <TextField label="Email Address" type="email" fullWidth required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-            <TextField label="Password" type="password" fullWidth required />
-            <FormControl fullWidth>
-              <InputLabel>Role</InputLabel>
-              <Select value={formData.role} label="Role" onChange={e => setFormData({...formData, role: e.target.value})}>
-                <MenuItem value="Super Admin">Super Admin</MenuItem>
-                <MenuItem value="Regional Admin">Regional Admin</MenuItem>
-                <MenuItem value="Facilitator">Facilitator</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleClose} variant="contained">Create User</Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-slate-600 whitespace-nowrap">
+            <thead className="bg-slate-50 text-slate-700 font-medium border-b border-slate-200">
+              <tr>
+                <th className="px-6 py-3">User</th>
+                <th className="px-6 py-3">Role</th>
+                <th className="px-6 py-3">Assignment</th>
+                <th className="px-6 py-3">Last Login</th>
+                <th className="px-6 py-3">Status</th>
+                <th className="px-6 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {users.map((user) => (
+                <tr key={user.id} className="hover:bg-slate-50/80 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 rounded-full bg-indigo-50 flex items-center justify-center font-bold text-indigo-600 text-sm border border-indigo-100 shrink-0">
+                        {user.name.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div>
+                        <div className="font-medium text-slate-900">{user.name}</div>
+                        <div className="text-xs text-slate-500 mt-0.5">{user.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border ${
+                      user.role === 'Super Admin' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                      user.role === 'Regional Admin' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                      'bg-slate-50 text-slate-700 border-slate-200'
+                    }`}>
+                      {user.role === 'Super Admin' && <ShieldAlert size={12} />}
+                      {user.role}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-slate-900">{user.region}</div>
+                    <div className="text-xs text-slate-500 mt-0.5">{user.centre === 'All' ? 'All Centres' : user.centre}</div>
+                  </td>
+                  <td className="px-6 py-4">{user.lastLogin}</td>
+                  <td className="px-6 py-4">
+                    <StatusChip status={user.status} />
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button className="p-1.5 text-slate-400 hover:text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors">
+                      <Edit2 size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
-};
-
-export default UsersList;
+}

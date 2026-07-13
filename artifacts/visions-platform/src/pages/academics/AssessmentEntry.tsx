@@ -1,195 +1,95 @@
-import React, { useState } from 'react';
-import { 
-  Box, Paper, Typography, Grid, TextField, Button, Autocomplete, 
-  Tabs, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  RadioGroup, FormControlLabel, Radio, FormControl, Snackbar, Alert
-} from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-
+import { useState } from 'react';
+import { Save } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
-import { students } from '../../data/mockData';
+import { students, centres } from '../../data/mockData';
 
-const subjects = [
-  { id: 'tam', name: 'Tamil', max: 100 },
-  { id: 'eng', name: 'English', max: 100 },
-  { id: 'mat', name: 'Mathematics', max: 100 },
-  { id: 'sci', name: 'Science', max: 100 },
-  { id: 'soc', name: 'Social Science', max: 100 },
-];
-
-const AssessmentEntry: React.FC = () => {
-  const navigate = useNavigate();
-  const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
-  const [assessmentType, setAssessmentType] = useState(0);
-  const [scores, setScores] = useState<Record<string, string>>({});
-  const [toastOpen, setToastOpen] = useState(false);
-
-  const handleScoreChange = (subId: string, val: string) => {
-    // Only allow numbers
-    if (val !== '' && !/^\d+$/.test(val)) return;
-    const num = parseInt(val, 10);
-    if (num > 100) return; // Prevent > 100
-    
-    setScores(prev => ({ ...prev, [subId]: val }));
-  };
-
-  const calculateTotal = () => {
-    let total = 0;
-    let count = 0;
-    Object.values(scores).forEach(s => {
-      if (s) {
-        total += parseInt(s, 10);
-        count++;
-      }
-    });
-    return { total, percent: count === 5 ? (total / 5).toFixed(1) : 0 };
-  };
-
-  const getGrade = (percent: number) => {
-    if (percent >= 90) return 'A';
-    if (percent >= 75) return 'B';
-    if (percent >= 60) return 'C';
-    if (percent >= 40) return 'D';
-    return 'E';
-  };
-
-  const { total, percent } = calculateTotal();
-
-  const handleSave = () => {
-    setToastOpen(true);
-    setTimeout(() => navigate('/academics'), 1500);
-  };
+export default function AssessmentEntry() {
+  const [selectedCentre, setSelectedCentre] = useState(centres[0].name);
+  const [assessmentName, setAssessmentName] = useState('Term 1 Final');
+  
+  const filteredStudents = students.filter(s => s.centre === selectedCentre);
 
   return (
-    <Box sx={{ maxWidth: 900, mx: 'auto' }}>
-      <PageHeader title="Enter Assessment Scores" breadcrumbs={[{ label: 'Academics', to: '/academics' }, { label: 'Entry' }]} />
+    <div className="max-w-6xl mx-auto space-y-6">
+      <PageHeader 
+        title="Enter Assessment Scores" 
+        subtitle="Record academic performance for individual students."
+        action={
+          <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+            <Save size={16} />
+            Save Scores
+          </button>
+        }
+      />
 
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Grid container spacing={3} alignItems="center">
-          <Grid item xs={12} md={6}>
-            <Autocomplete
-              options={students}
-              getOptionLabel={(option) => `${option.id} - ${option.name} (${option.centre})`}
-              onChange={(_, newValue) => setSelectedStudent(newValue)}
-              renderInput={(params) => <TextField {...params} label="Search Student" variant="outlined" size="small" />}
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-4 sm:p-6 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Select Centre</label>
+            <select 
+              value={selectedCentre}
+              onChange={(e) => setSelectedCentre(e.target.value)}
+              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none shadow-sm cursor-pointer"
+            >
+              {centres.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">Assessment Name</label>
+            <input 
+              type="text" 
+              value={assessmentName}
+              onChange={(e) => setAssessmentName(e.target.value)}
+              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none shadow-sm"
+              placeholder="e.g. Mid-Term 1"
             />
-          </Grid>
-        </Grid>
-      </Paper>
+          </div>
+        </div>
+      </div>
 
-      {selectedStudent && (
-        <Box>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-            <Tabs value={assessmentType} onChange={(_, v) => setAssessmentType(v)}>
-              <Tab label="Quarterly Q1" />
-              <Tab label="Quarterly Q2" />
-              <Tab label="Quarterly Q3" />
-              <Tab label="Half-Yearly" />
-              <Tab label="Annual" />
-            </Tabs>
-          </Box>
-
-          <Paper sx={{ mb: 3, overflow: 'hidden' }}>
-            <Box sx={{ p: 2, bgcolor: 'primary.50', borderBottom: 1, borderColor: 'divider' }}>
-              <Typography variant="subtitle1" fontWeight="bold">Subject Scores</Typography>
-            </Box>
-            <TableContainer>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Subject</TableCell>
-                    <TableCell align="center">Max Marks</TableCell>
-                    <TableCell align="center">Marks Obtained</TableCell>
-                    <TableCell align="center">Percentage</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {subjects.map(sub => {
-                    const scoreStr = scores[sub.id] || '';
-                    const scoreNum = scoreStr ? parseInt(scoreStr, 10) : 0;
-                    return (
-                      <TableRow key={sub.id}>
-                        <TableCell><Typography variant="body2" fontWeight={500}>{sub.name}</Typography></TableCell>
-                        <TableCell align="center">{sub.max}</TableCell>
-                        <TableCell align="center">
-                          <TextField 
-                            size="small" 
-                            value={scoreStr}
-                            onChange={(e) => handleScoreChange(sub.id, e.target.value)}
-                            inputProps={{ style: { textAlign: 'center' } }}
-                            sx={{ width: 80 }}
-                          />
-                        </TableCell>
-                        <TableCell align="center">
-                          {scoreStr ? `${scoreNum}%` : '-'}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                  <TableRow sx={{ bgcolor: 'grey.50' }}>
-                    <TableCell colSpan={2}><Typography variant="subtitle2" align="right">Total & Grade:</Typography></TableCell>
-                    <TableCell align="center"><Typography variant="subtitle2">{total} / 500</Typography></TableCell>
-                    <TableCell align="center">
-                      <Typography variant="subtitle2" color={Number(percent) < 50 ? 'error' : 'primary'}>
-                        {Number(percent) > 0 ? `${percent}% (Grade ${getGrade(Number(percent))})` : '-'}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
-
-          <Paper sx={{ mb: 4 }}>
-            <Box sx={{ p: 2, bgcolor: 'grey.50', borderBottom: 1, borderColor: 'divider' }}>
-              <Typography variant="subtitle1" fontWeight="bold">Diagnostic Observations</Typography>
-            </Box>
-            <Box sx={{ p: 3 }}>
-              <Grid container spacing={4}>
-                <Grid item xs={12} sm={6}>
-                  <FormControl component="fieldset" fullWidth>
-                    <Typography variant="caption" color="text.secondary" gutterBottom>Understanding Level</Typography>
-                    <RadioGroup defaultValue="understands">
-                      <FormControlLabel value="understands" control={<Radio size="small"/>} label={<Typography variant="body2">Understands Clearly</Typography>} />
-                      <FormControlLabel value="needs_rep" control={<Radio size="small"/>} label={<Typography variant="body2">Needs Repetition</Typography>} />
-                      <FormControlLabel value="does_not" control={<Radio size="small"/>} label={<Typography variant="body2">Does Not Understand</Typography>} />
-                    </RadioGroup>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <FormControl component="fieldset" fullWidth>
-                    <Typography variant="caption" color="text.secondary" gutterBottom>Application Ability</Typography>
-                    <RadioGroup defaultValue="applies">
-                      <FormControlLabel value="applies" control={<Radio size="small"/>} label={<Typography variant="body2">Applies Concepts Independently</Typography>} />
-                      <FormControlLabel value="memorises" control={<Radio size="small"/>} label={<Typography variant="body2">Memorises Only</Typography>} />
-                      <FormControlLabel value="cannot" control={<Radio size="small"/>} label={<Typography variant="body2">Cannot Apply</Typography>} />
-                    </RadioGroup>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField 
-                    label="Narrative Observation" 
-                    multiline rows={4} fullWidth 
-                    placeholder="Enter detailed notes on student's academic progress, challenges, and recommended interventions..."
-                  />
-                </Grid>
-              </Grid>
-            </Box>
-          </Paper>
-
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 4 }}>
-            <Button variant="contained" size="large" onClick={handleSave} disabled={Object.keys(scores).length === 0}>
-              Save Assessment Record
-            </Button>
-          </Box>
-        </Box>
-      )}
-
-      <Snackbar open={toastOpen} autoHideDuration={3000}>
-        <Alert severity="success" sx={{ width: '100%' }}>Assessment saved successfully!</Alert>
-      </Snackbar>
-    </Box>
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-slate-600 min-w-[900px]">
+            <thead className="bg-slate-50 text-slate-700 font-medium border-b border-slate-200">
+              <tr>
+                <th className="px-6 py-3 w-1/4">Student</th>
+                <th className="px-4 py-3 text-center">Tamil</th>
+                <th className="px-4 py-3 text-center">English</th>
+                <th className="px-4 py-3 text-center">Math</th>
+                <th className="px-4 py-3 text-center">Science</th>
+                <th className="px-4 py-3 text-center">Social</th>
+                <th className="px-6 py-3 text-right">Total %</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredStudents.map((student) => {
+                const baseScore = Math.floor(student.academicScore * 0.9);
+                return (
+                  <tr key={student.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-slate-900">{student.name}</div>
+                      <div className="text-xs text-slate-500">{student.id}</div>
+                    </td>
+                    {[baseScore, baseScore+5, baseScore-2, baseScore+8, baseScore+1].map((s, i) => (
+                      <td key={i} className="px-4 py-3">
+                        <input 
+                          type="number" 
+                          defaultValue={Math.min(100, Math.max(0, s))}
+                          min="0" max="100"
+                          className="w-16 mx-auto block px-2 py-1 text-center bg-white border border-slate-300 rounded text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors"
+                        />
+                      </td>
+                    ))}
+                    <td className="px-6 py-4 text-right font-bold text-indigo-600">
+                      {student.academicScore}%
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
-};
-
-export default AssessmentEntry;
+}
