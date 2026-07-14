@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "WUaLNQ-ftglI3T6qcI1yw"
+uri = "file://visions-platform-source.zip"
+type = "unspecified"
+title = "Visions Platform — Source Code (ZIP)"
