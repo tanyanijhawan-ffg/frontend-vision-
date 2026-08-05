@@ -1,0 +1,15 @@
+[project]
+name = "vision_global_empowerment"
+version = "0.1.0"
+description = "A Django project for Vision Global Empowerment."
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "Django==6.0.7",
+    "djangorestframework==3.17.1",
+    "django-filter==26.1",
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"

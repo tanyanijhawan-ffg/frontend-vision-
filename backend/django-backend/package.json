@@ -1,0 +1,11 @@
+{
+  "name": "@vision-global-empowerment/django-backend",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "python3 manage.py runserver 0.0.0.0:8000",
+    "migrate": "python3 manage.py migrate",
+    "makemigrations": "python3 manage.py makemigrations",
+    "shell": "python3 manage.py shell"
+  }
+}
