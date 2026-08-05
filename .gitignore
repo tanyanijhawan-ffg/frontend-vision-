@@ -47,3 +47,36 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual Environment
+.venv/
+venv/
+
+# Environment variables
+.env
+.env.*
+
+# Node
+node_modules/
+
+# Build
+dist/
+build/
+
+# Database
+*.sqlite3
+# Environment variables
+.env
+.env.*
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
