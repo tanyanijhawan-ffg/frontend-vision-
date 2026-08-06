@@ -1,5 +1,22 @@
 from django.contrib import admin
-from .models import Attendance, Center, Role, Student
+from .models import (
+    Attendance,
+    AcademicAssessment,
+    Aspiration,
+    Center,
+    District,
+    Family,
+    LearningBehaviour,
+    Motivation,
+    Program,
+    Region,
+    Role,
+    SocioEconomic,
+    Student,
+    StudentVulnerability,
+    SubjectScore,
+    VulnerabilityMaster,
+)
 
 
 @admin.register(Center)
@@ -26,3 +43,16 @@ class AttendanceAdmin(admin.ModelAdmin):
     list_display = ('attendance_id', 'student', 'attendance_date', 'status')
     list_filter = ('status', 'attendance_date', 'student__centre')
     search_fields = ('student__full_name',)
+
+admin.site.register(Program)
+admin.site.register(Region)
+admin.site.register(District)
+admin.site.register(Family)
+admin.site.register(SocioEconomic)
+admin.site.register(VulnerabilityMaster)
+admin.site.register(StudentVulnerability)
+admin.site.register(Motivation)
+admin.site.register(Aspiration)
+admin.site.register(LearningBehaviour)
+admin.site.register(AcademicAssessment)
+admin.site.register(SubjectScore)
