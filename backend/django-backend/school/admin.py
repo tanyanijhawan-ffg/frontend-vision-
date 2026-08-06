@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Attendance, Center, Role, Student, StudentProfile
+from .models import Attendance, Center, Role, Student
 
 
 @admin.register(Center)
@@ -19,13 +19,6 @@ class StudentAdmin(admin.ModelAdmin):
     list_display = ('student_id', 'full_name', 'gender', 'age', 'centre')
     list_filter = ('gender', 'centre')
     search_fields = ('full_name', 'nick_name', 'school_name')
-
-
-@admin.register(StudentProfile)
-class StudentProfileAdmin(admin.ModelAdmin):
-    list_display = ('student_id', 'admission_number', 'first_name', 'last_name', 'center', 'status', 'admission_date')
-    list_filter = ('center', 'status', 'gender')
-    search_fields = ('admission_number', 'first_name', 'last_name', 'email', 'mobile_number')
 
 
 @admin.register(Attendance)
